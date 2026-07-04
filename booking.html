@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>無料説明会の予約 | あいらいふ（AI LIFE）</title>
+    <meta
+      name="description"
+      content="あいらいふ（AI LIFE）の無料説明会予約ページです。空き日程を選んで、ChatGPTとCodexの実践講座について相談できます。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" aria-label="サイトヘッダー">
+      <a class="brand" href="index.html#top" aria-label="あいらいふ トップへ">
+        <span class="brand-mark">A</span>
+        <span>あいらいふ</span>
+      </a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="index.html#curriculum">カリキュラム</a>
+        <a href="index.html#bonus">特典</a>
+        <a href="index.html#flow">受講方法</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="booking.html" class="nav-cta">無料説明会</a>
+      </nav>
+      <button class="menu-button" type="button" aria-label="メニューを開く" aria-expanded="false">
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+
+    <main class="booking-page">
+      <section class="booking-hero">
+        <div class="section-inner booking-hero-grid">
+          <div>
+            <p class="eyebrow">Free Briefing</p>
+            <h1>無料説明会を予約する</h1>
+            <p class="lead">
+              空き日程を選んで、AI LIFE ACADEMYの内容、2日間の進め方、説明会特典、返金保証の条件を確認できます。
+              予約後、Zoomリンクをメールでお送りします。
+            </p>
+            <div class="hero-badges">
+              <span>オンライン開催</span>
+              <span>30〜60分目安</span>
+              <span>スマホ参加OK</span>
+            </div>
+          </div>
+          <figure class="image-panel">
+            <img src="assets/funnel-flow.png" alt="説明会予約からZoom参加までの流れのイメージ" />
+          </figure>
+        </div>
+      </section>
+
+      <section class="section muted" aria-labelledby="booking-flow-title">
+        <div class="section-inner">
+          <div class="section-heading center">
+            <p class="eyebrow">Flow</p>
+            <h2 id="booking-flow-title">予約から参加までの流れ</h2>
+          </div>
+          <div class="flow-diagram">
+            <article>
+              <span>1</span>
+              <h3>日程を選ぶ</h3>
+              <p>こちらが用意した空き枠から、参加しやすい時間を選びます。</p>
+            </article>
+            <article>
+              <span>2</span>
+              <h3>連絡先を入力</h3>
+              <p>氏名、メール、電話番号、AI経験などを入力します。</p>
+            </article>
+            <article>
+              <span>3</span>
+              <h3>Zoomリンクを受け取る</h3>
+              <p>予約完了後、登録メール宛にZoomリンクと準備物を送ります。</p>
+            </article>
+            <article>
+              <span>4</span>
+              <h3>説明会に参加</h3>
+              <p>講座内容と申込方法を確認し、希望者は申込ページへ進みます。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="booking-title">
+        <div class="section-inner booking-layout">
+          <div class="section-heading">
+            <p class="eyebrow">Schedule</p>
+            <h2 id="booking-title">空き枠を選択</h2>
+            <p>
+              下のフォームから送信すると、運営事務局へ通知され、予約者情報がGoogleスプレッドシートへ自動保存されます。
+              予約完了後は、入力したメールアドレス宛にZoomリンク入りの予約完了メールをお送りします。
+            </p>
+            <div class="booking-note">
+              <strong>自動保存</strong>
+              <span>氏名、メール、電話番号、希望日程、相談内容を一覧で管理できます。</span>
+            </div>
+          </div>
+
+          <form
+            class="booking-form"
+            id="bookingForm"
+            action=""
+            method="POST"
+            data-endpoint="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfOn2rwxm9M9sjA_HSz4NKfN_N0Ghsqf8aCifoM1Gl750YGjw/formResponse"
+            data-entry-slot="entry.1904670148"
+            data-entry-name="entry.725353133"
+            data-entry-email="entry.354237653"
+            data-entry-phone="entry.436057300"
+            data-entry-experience="entry.1356205828"
+            data-entry-interest="entry.2114920772"
+            data-entry-zoom="entry.570275099"
+            data-entry-source="entry.1115295897"
+          >
+            <fieldset>
+              <legend>希望日程</legend>
+              <label class="slot-option">
+                <input type="radio" name="slot" value="7月10日（金）20:00〜21:00" required />
+                <span>
+                  <strong>7月10日（金）20:00〜21:00</strong>
+                  <small>オンラインZoom説明会</small>
+                </span>
+              </label>
+              <label class="slot-option">
+                <input type="radio" name="slot" value="7月12日（日）21:00〜22:00" />
+                <span>
+                  <strong>7月12日（日）21:00〜22:00</strong>
+                  <small>オンラインZoom説明会</small>
+                </span>
+              </label>
+              <label class="slot-option">
+                <input type="radio" name="slot" value="7月14日（火）20:00〜21:00" />
+                <span>
+                  <strong>7月14日（火）20:00〜21:00</strong>
+                  <small>オンラインZoom説明会</small>
+                </span>
+              </label>
+            </fieldset>
+
+            <div class="form-grid">
+              <label>
+                <span>氏名</span>
+                <input type="text" name="name" autocomplete="name" required />
+              </label>
+              <label>
+                <span>メールアドレス</span>
+                <input type="email" name="email" autocomplete="email" required />
+              </label>
+              <label>
+                <span>電話番号</span>
+                <input type="tel" name="phone" autocomplete="tel" required />
+              </label>
+              <label>
+                <span>AI経験</span>
+                <select name="experience" required>
+                  <option value="">選択してください</option>
+                  <option>ほぼ未経験</option>
+                  <option>ChatGPTを少し使ったことがある</option>
+                  <option>仕事でAIを使っている</option>
+                  <option>Codexや自動化にも興味がある</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              <span>特に知りたいこと</span>
+              <textarea name="interest" rows="4" placeholder="例: 仕事の時短、SNS自動化、CodexでLP制作、副業への活用など"></textarea>
+            </label>
+
+            <label class="consent-check">
+              <input type="checkbox" name="consent" required />
+              <span><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>に同意します</span>
+            </label>
+
+            <button class="button primary large" type="submit">予約内容を送信する</button>
+            <p class="form-help">
+              送信内容はGoogleフォーム経由でスプレッドシートに保存されます。
+              設定完了後は、入力したメールアドレス宛にZoomリンク入りの予約完了メールが自動送信されます。
+            </p>
+          </form>
+        </div>
+      </section>
+
+      <section class="section company-section" aria-labelledby="automation-title">
+        <div class="section-inner split-layout">
+          <div>
+            <p class="eyebrow">Automation</p>
+            <h2 id="automation-title">本運用ではここまで自動化できます</h2>
+            <p>
+              現在はGoogleフォーム経由でスプレッドシートに自動保存し、新規回答の通知を受け取れます。
+              将来的には前日リマインドや説明会後の申込案内メールまで拡張できます。
+            </p>
+          </div>
+          <div class="company-card">
+            <dl class="company-list">
+              <div>
+                <dt>予約受付</dt>
+                <dd>この予約ページ</dd>
+              </div>
+              <div>
+                <dt>顧客管理</dt>
+                <dd>Googleフォーム + スプレッドシート</dd>
+              </div>
+              <div>
+                <dt>通知</dt>
+                <dd>Googleフォームの新規回答通知</dd>
+              </div>
+              <div>
+                <dt>決済</dt>
+                <dd>Stripe決済リンクまたは銀行振込</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <a class="brand" href="index.html#top">
+          <span class="brand-mark">A</span>
+          <span>あいらいふ</span>
+        </a>
+        <div class="footer-links">
+          <a href="index.html#company">会社情報</a>
+          <a href="legal.html">特定商取引法に基づく表記</a>
+          <a href="privacy.html">プライバシーポリシー</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
