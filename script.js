@@ -19,12 +19,12 @@ if (menuButton && nav) {
 
 const revealTargets = [
   ...document.querySelectorAll(
-    ".section-heading, .reason-grid, .split-layout, .guarantee-box, .comparison-table, .bonus-layout, .faq-layout, .company-layout, .briefing-panel, .legal-list, .policy-stack section"
+    ".section-heading, .reason-grid, .split-layout, .guarantee-box, .comparison-table, .bonus-layout, .faq-layout, .company-layout, .briefing-panel, .legal-list, .policy-stack section, .curriculum-summary, .roadmap-panel, .deliverables-panel"
   ),
 ];
 
 const staggerTargets = [
-  ...document.querySelectorAll(".worry-grid, .level-stack, .bonus-list, .flow-diagram"),
+  ...document.querySelectorAll(".worry-grid, .level-stack, .chapter-grid, .bonus-list, .flow-diagram"),
 ];
 
 revealTargets.forEach((element) => element.classList.add("reveal"));
@@ -51,11 +51,52 @@ if ("IntersectionObserver" in window) {
 const bookingForm = document.querySelector("#bookingForm");
 const bookingSlotsContainer = document.querySelector("#bookingSlots");
 const bookingZoomUrl = "https://us05web.zoom.us/j/87362640884?pwd=K1hsImx0aSZtk5du0V5NtHF1UwCAXs.1";
+const bookingConfig = window.AI_LIFE_BOOKING_CONFIG || {};
 
-function renderBookingSlots() {
+function fetchJsonp(url) {
+  return new Promise((resolve, reject) => {
+    const callbackName = `aiLifeBooking_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const script = document.createElement("script");
+    const separator = url.includes("?") ? "&" : "?";
+    script.src = `${url}${separator}callback=${encodeURIComponent(callbackName)}`;
+    script.async = true;
+
+    const cleanup = () => {
+      delete window[callbackName];
+      script.remove();
+    };
+
+    window[callbackName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.addEventListener("error", () => {
+      cleanup();
+      reject(new Error("予約枠を読み込めませんでした。"));
+    });
+
+    document.head.append(script);
+  });
+}
+
+function normalizeSlotGroups(weeks) {
+  return (weeks || []).map((week) => ({
+    label: week.label || "予約可能日程",
+    slots: (week.slots || []).map((slot) => ({
+      ...slot,
+      id: slot.id || `${slot.date || ""}-${slot.time || ""}`,
+      label: slot.label || `${slot.date || ""} ${slot.time || ""}`.trim(),
+      capacity: Number(slot.capacity || 0),
+      remaining: Number(slot.remaining ?? slot.capacity ?? 0),
+    })),
+  }));
+}
+
+function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   if (!bookingSlotsContainer) return;
 
-  const weeks = Array.isArray(window.AI_LIFE_BOOKING_WEEKS) ? window.AI_LIFE_BOOKING_WEEKS : [];
+  const weeks = Array.isArray(weeksSource) ? normalizeSlotGroups(weeksSource) : [];
   bookingSlotsContainer.replaceChildren();
 
   if (weeks.length === 0) {
@@ -80,26 +121,34 @@ function renderBookingSlots() {
     list.className = "slot-week-list";
 
     (week.slots || []).forEach((slot) => {
-      const value = `${slot.date} ${slot.time}`;
+      const value = slot.label || `${slot.date} ${slot.time}`;
+      const remaining = Number(slot.remaining ?? slot.capacity ?? 0);
+      const isFull = remaining <= 0;
       const label = document.createElement("label");
       label.className = "slot-option";
+      if (isFull) label.classList.add("is-full");
 
       const input = document.createElement("input");
       input.type = "radio";
       input.name = "slot";
       input.value = value;
-      input.required = isFirstSlot;
+      input.dataset.slotId = slot.id || "";
+      input.required = isFirstSlot && !isFull;
+      input.disabled = isFull;
 
       const text = document.createElement("span");
       const main = document.createElement("strong");
       main.textContent = value;
       const note = document.createElement("small");
       note.textContent = slot.note || "オンラインZoom説明会";
+      const seat = document.createElement("em");
+      seat.className = isFull ? "slot-seat is-full" : "slot-seat";
+      seat.textContent = isFull ? "満員御礼" : `残席 ${remaining}`;
 
-      text.append(main, note);
+      text.append(main, note, seat);
       label.append(input, text);
       list.append(label);
-      isFirstSlot = false;
+      if (!isFull) isFirstSlot = false;
     });
 
     group.append(list);
@@ -108,6 +157,25 @@ function renderBookingSlots() {
 }
 
 renderBookingSlots();
+
+async function loadManagedBookingSlots() {
+  const endpoint = bookingConfig.apiEndpoint || bookingForm?.dataset.bookingApi || "";
+  if (!bookingSlotsContainer || !endpoint) return;
+
+  try {
+    const data = await fetchJsonp(`${endpoint}?action=slots`);
+    if (data && data.ok && Array.isArray(data.weeks)) {
+      renderBookingSlots(data.weeks);
+    }
+  } catch (error) {
+    const warning = document.createElement("p");
+    warning.className = "slot-loading";
+    warning.textContent = "管理システムの日程を読み込めないため、仮の日程を表示しています。";
+    bookingSlotsContainer.prepend(warning);
+  }
+}
+
+loadManagedBookingSlots();
 
 if (bookingForm) {
   bookingForm.addEventListener("submit", async (event) => {
@@ -144,6 +212,37 @@ if (bookingForm) {
 
     try {
       const data = new FormData(bookingForm);
+      const selectedSlot = bookingForm.querySelector('input[name="slot"]:checked');
+      const bookingApi = bookingForm.dataset.bookingApi || bookingConfig.apiEndpoint || "";
+
+      if (bookingApi) {
+        const managedData = new URLSearchParams();
+        managedData.append("action", "reserve");
+        managedData.append("slotId", selectedSlot?.dataset.slotId || "");
+        managedData.append("slot", data.get("slot") || "");
+        managedData.append("name", data.get("name") || "");
+        managedData.append("email", data.get("email") || "");
+        managedData.append("phone", data.get("phone") || "");
+        managedData.append("experience", data.get("experience") || "");
+        managedData.append("interest", data.get("interest") || "");
+        managedData.append("coupon", data.get("briefingCoupon") ? "FS20260701" : "");
+        managedData.append("zoom", bookingZoomUrl);
+        managedData.append("source", location.href);
+
+        await fetch(bookingApi, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+          body: managedData.toString(),
+        });
+
+        bookingForm.reset();
+        await loadManagedBookingSlots();
+        status.textContent =
+          `予約内容を送信しました。Zoomリンクをメールでお送りします。クーポンコード: FS20260701`;
+        return;
+      }
+
       const googleFormData = new FormData();
       googleFormData.append(googleFormEntries.slot, data.get("slot") || "");
       googleFormData.append(googleFormEntries.name, data.get("name") || "");

@@ -13,7 +13,7 @@
   <body>
     <header class="site-header" aria-label="サイトヘッダー">
       <a class="brand" href="index.html#top" aria-label="あいらいふ トップへ">
-        <span class="brand-mark">A</span>
+        <img class="brand-mark" src="assets/ai-life-icon.jpg" alt="" />
         <span>あいらいふ</span>
       </a>
       <nav class="nav" aria-label="主要ナビゲーション">
@@ -37,7 +37,7 @@
             <p class="eyebrow">Free Briefing</p>
             <h1>無料説明会を予約する</h1>
             <p class="lead">
-              空き日程を選んで、AI LIFE ACADEMYの内容、2日間の進め方、説明会特典、返金保証の条件を確認できます。
+              空き日程を選んで、AI LIFE ACADEMYの内容、5日間の進め方、説明会特典、返金保証の条件を確認できます。
               予約後、Zoomリンクをメールでお送りします。
             </p>
             <div class="hero-badges">
@@ -58,24 +58,20 @@
             <p class="eyebrow">Flow</p>
             <h2 id="booking-flow-title">予約から参加までの流れ</h2>
           </div>
-          <div class="flow-diagram">
+          <div class="flow-diagram booking-flow-steps">
             <article>
               <span>1</span>
-              <h3>日程を選ぶ</h3>
-              <p>こちらが用意した空き枠から、参加しやすい時間を選びます。</p>
+              <h3>日程を選び連絡先を入力</h3>
+              <p>空き枠から参加しやすい時間を選び、氏名・メール・電話番号を入力します。</p>
+              <a class="text-link" href="#booking-title">空き枠を選択</a>
             </article>
             <article>
               <span>2</span>
-              <h3>連絡先を入力</h3>
-              <p>氏名、メール、電話番号、AI経験などを入力します。</p>
-            </article>
-            <article>
-              <span>3</span>
               <h3>Zoomリンクを受け取る</h3>
               <p>予約完了後、登録メール宛にZoomリンクと準備物を送ります。</p>
             </article>
             <article>
-              <span>4</span>
+              <span>3</span>
               <h3>説明会に参加</h3>
               <p>講座内容と申込方法を確認し、希望者は申込ページへ進みます。</p>
             </article>
@@ -112,6 +108,7 @@
             data-entry-interest="entry.2114920772"
             data-entry-zoom="entry.570275099"
             data-entry-source="entry.1115295897"
+            data-booking-api=""
           >
             <fieldset>
               <legend>希望日程</legend>
@@ -150,6 +147,11 @@
               <textarea name="interest" rows="4" placeholder="例: 仕事の時短、SNS自動化、CodexでLP制作、副業への活用など"></textarea>
             </label>
 
+            <label class="coupon-check">
+              <input type="checkbox" name="briefingCoupon" />
+              <span>説明会参加者限定クーポン（FS20260701）の案内を希望します</span>
+            </label>
+
             <label class="consent-check">
               <input type="checkbox" name="consent" required />
               <span><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>に同意します</span>
@@ -157,8 +159,8 @@
 
             <button class="button primary large" type="submit">予約内容を送信する</button>
             <p class="form-help">
-              送信内容はGoogleフォーム経由でスプレッドシートに保存されます。
-              設定完了後は、入力したメールアドレス宛にZoomリンク入りの予約完了メールが自動送信されます。
+              送信内容はGoogleフォームまたは予約管理システム経由で保存されます。
+              予約管理システム設定後は、残席管理・満員御礼表示・Zoomリンク自動送信まで動かせます。
             </p>
           </form>
         </div>
@@ -170,8 +172,8 @@
             <p class="eyebrow">Automation</p>
             <h2 id="automation-title">本運用ではここまで自動化できます</h2>
             <p>
-              現在はGoogleフォーム経由でスプレッドシートに自動保存し、新規回答の通知を受け取れます。
-              将来的には前日リマインドや説明会後の申込案内メールまで拡張できます。
+              予約管理システムを設定すると、運営側で希望日程の追加・削除、残席、満員御礼、参加ステータス、
+              決済済み・返金済みまでスプレッドシートで管理できます。
             </p>
           </div>
           <div class="company-card">
@@ -182,15 +184,19 @@
               </div>
               <div>
                 <dt>顧客管理</dt>
-                <dd>Googleフォーム + スプレッドシート</dd>
+                <dd>Googleスプレッドシート + Apps Script</dd>
               </div>
               <div>
                 <dt>通知</dt>
-                <dd>Googleフォームの新規回答通知</dd>
+                <dd>Zoomリンク自動送信・運営通知</dd>
+              </div>
+              <div>
+                <dt>運営管理</dt>
+                <dd><a href="admin.html">予約管理ページ</a>から日程追加・削除</dd>
               </div>
               <div>
                 <dt>決済</dt>
-                <dd><a href="https://buy.stripe.com/28E00k4v05Vzedy8j46kg01" target="_blank" rel="noopener">Stripe決済リンク</a>または銀行振込</dd>
+                <dd><a href="https://buy.stripe.com/9B65kE7Hc1Fjc5q7f06kg02" target="_blank" rel="noopener">Stripe決済リンク</a>または銀行振込</dd>
               </div>
             </dl>
           </div>
@@ -201,7 +207,7 @@
     <footer class="site-footer">
       <div class="footer-inner">
         <a class="brand" href="index.html#top">
-          <span class="brand-mark">A</span>
+          <img class="brand-mark" src="assets/ai-life-icon.jpg" alt="" />
           <span>あいらいふ</span>
         </a>
         <div class="footer-links">

@@ -22,6 +22,7 @@ const HEADERS = [
   '通貨',
   'Drive権限',
   'メール送信',
+  '購入者ステータス',
   'メモ',
 ];
 
@@ -100,6 +101,7 @@ function handleCheckoutCompleted_(event) {
     currency: session.currency,
     driveStatus: '付与済み',
     mailStatus: '送信済み',
+    purchaserStatus: '決済済み',
   });
 
   return json_({ ok: true, granted: true, email });
@@ -110,6 +112,11 @@ function handleRefund_(event) {
   const chargeId = refundObject.object === 'charge' ? refundObject.id : refundObject.charge;
   const paymentIntentId = refundObject.payment_intent || '';
   const sheet = getOrCreateSheet_();
+
+  if (hasProcessedEvent_(sheet, event.id)) {
+    return json_({ ok: true, duplicated: true });
+  }
+
   const purchaser = findPurchaserForRefund_(sheet, {
     chargeId,
     paymentIntentId,
@@ -130,6 +137,23 @@ function handleRefund_(event) {
       { name: CONFIG.senderName }
     );
     return json_({ ok: true, needsCheck: true });
+  }
+
+  if (purchaser.status === 'REFUNDED') {
+    logRow_({
+      status: 'REFUND_DUPLICATED',
+      name: purchaser.name,
+      email: purchaser.email,
+      eventId: event.id,
+      eventType: event.type,
+      chargeId,
+      paymentIntentId,
+      driveStatus: '処理済み',
+      mailStatus: '送信なし',
+      purchaserStatus: '返金済み',
+      memo: 'すでに返金・権限削除済みのため、重複通知を停止しました。',
+    });
+    return json_({ ok: true, alreadyRefunded: true, email: purchaser.email });
   }
 
   let driveStatus = '削除済み';
@@ -166,6 +190,7 @@ function handleRefund_(event) {
     paymentIntentId,
     driveStatus,
     mailStatus: '運営へ通知済み',
+    purchaserStatus: '返金済み',
     memo: driveMemo,
   });
 
@@ -232,6 +257,8 @@ function getOrCreateSheet_() {
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
     sheet.setFrozenRows(1);
+  } else {
+    ensureHeaders_(sheet);
   }
 
   return sheet;
@@ -269,11 +296,21 @@ function logRow_(data) {
     data.paymentIntentId || '',
     data.chargeId || '',
     data.amount || '',
-    data.currency || '',
-    data.driveStatus || '',
-    data.mailStatus || '',
-    data.memo || '',
-  ]);
+	    data.currency || '',
+	    data.driveStatus || '',
+	    data.mailStatus || '',
+	    data.purchaserStatus || '',
+	    data.memo || '',
+	  ]);
+}
+
+function ensureHeaders_(sheet) {
+  const current = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), HEADERS.length)).getValues()[0];
+  HEADERS.forEach((header) => {
+    if (!current.includes(header)) {
+      sheet.getRange(1, sheet.getLastColumn() + 1).setValue(header);
+    }
+  });
 }
 
 function hasProcessedEvent_(sheet, eventId) {
@@ -295,6 +332,7 @@ function markPurchaserRefunded_(sheet, purchaser, refundData) {
     paymentIntentId: HEADERS.indexOf('Payment Intent ID') + 1,
     driveStatus: HEADERS.indexOf('Drive権限') + 1,
     mailStatus: HEADERS.indexOf('メール送信') + 1,
+    purchaserStatus: HEADERS.indexOf('購入者ステータス') + 1,
     memo: HEADERS.indexOf('メモ') + 1,
   };
 
@@ -304,6 +342,7 @@ function markPurchaserRefunded_(sheet, purchaser, refundData) {
   if (refundData.paymentIntentId) sheet.getRange(rowNumber, indexes.paymentIntentId).setValue(refundData.paymentIntentId);
   sheet.getRange(rowNumber, indexes.driveStatus).setValue(refundData.driveStatus || '削除済み');
   sheet.getRange(rowNumber, indexes.mailStatus).setValue('運営へ通知済み');
+  sheet.getRange(rowNumber, indexes.purchaserStatus).setValue('返金済み');
   sheet.getRange(rowNumber, indexes.memo).setValue(
     `返金済み / 返金イベントID: ${refundData.refundEventId}${refundData.memo ? ` / ${refundData.memo}` : ''}`
   );
@@ -315,6 +354,7 @@ function findPurchaserForRefund_(sheet, data) {
 
   const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, HEADERS.length).getValues();
   const indexes = {
+    status: HEADERS.indexOf('ステータス'),
     name: HEADERS.indexOf('氏名'),
     email: HEADERS.indexOf('メールアドレス'),
     paymentIntentId: HEADERS.indexOf('Payment Intent ID'),
@@ -335,6 +375,7 @@ function findPurchaserForRefund_(sheet, data) {
 
   const row = values[rowIndex];
   return {
+    status: row[indexes.status],
     name: row[indexes.name],
     email: normalizeEmail_(row[indexes.email]),
     rowNumber: rowIndex + 2,

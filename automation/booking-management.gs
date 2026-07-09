@@ -1,0 +1,384 @@
+const BOOKING_CONFIG = {
+  adminEmail: 'rakuichi644@gmail.com',
+  senderName: 'あいらいふ運営事務局',
+  spreadsheetName: 'AI LIFE ACADEMY_予約管理',
+  slotsSheetName: '予約枠',
+  reservationsSheetName: '予約者管理',
+  zoomUrl: 'https://us05web.zoom.us/j/87362640884?pwd=K1hsImx0aSZtk5du0V5NtHF1UwCAXs.1',
+  couponCode: 'FS20260701',
+};
+
+const SLOT_HEADERS = [
+  'slotId',
+  '週ラベル',
+  '日付',
+  '時間',
+  'メモ',
+  '定員',
+  '残席',
+  '公開',
+  '作成日時',
+  '更新日時',
+];
+
+const RESERVATION_HEADERS = [
+  '予約日時',
+  '予約ステータス',
+  '氏名',
+  'メールアドレス',
+  '電話番号',
+  '希望日程',
+  'slotId',
+  'AI経験',
+  '知りたいこと',
+  'Zoom URL',
+  'クーポン',
+  '説明会ステータス',
+  '決済ステータス',
+  '返金ステータス',
+  '購入者ステータス',
+  '流入元',
+  'メモ',
+];
+
+function doGet(e) {
+  const action = getParam_(e, 'action') || 'slots';
+
+  if (action === 'slots') {
+    const includePrivate = getParam_(e, 'includePrivate') === '1';
+    const data = {
+      ok: true,
+      weeks: getPublicSlotGroups_(includePrivate),
+    };
+    return output_(e, data);
+  }
+
+  return output_(e, { ok: false, error: 'Unknown action' });
+}
+
+function doPost(e) {
+  try {
+    const action = getParam_(e, 'action');
+
+    if (action === 'reserve') {
+      return output_(e, reserveSlot_(e));
+    }
+
+    assertAdmin_(e);
+
+    if (action === 'addSlot') {
+      return output_(e, addSlot_(e));
+    }
+
+    if (action === 'deleteSlot') {
+      return output_(e, deleteSlot_(e));
+    }
+
+    if (action === 'updateSlot') {
+      return output_(e, updateSlot_(e));
+    }
+
+    if (action === 'updateReservationStatus') {
+      return output_(e, updateReservationStatus_(e));
+    }
+
+    return output_(e, { ok: false, error: 'Unknown action' });
+  } catch (error) {
+    return output_(e, { ok: false, error: error.message });
+  }
+}
+
+function reserveSlot_(e) {
+  const slotId = getParam_(e, 'slotId');
+  const slotLabel = getParam_(e, 'slot');
+  const name = getParam_(e, 'name') || 'お客様';
+  const email = normalizeEmail_(getParam_(e, 'email'));
+  const phone = getParam_(e, 'phone');
+  const experience = getParam_(e, 'experience');
+  const interest = getParam_(e, 'interest');
+  const source = getParam_(e, 'source');
+  const coupon = getParam_(e, 'coupon') || BOOKING_CONFIG.couponCode;
+
+  if (!slotId && !slotLabel) throw new Error('希望日程が選択されていません。');
+  if (!email) throw new Error('メールアドレスがありません。');
+
+  const slotsSheet = getSheet_(BOOKING_CONFIG.slotsSheetName, SLOT_HEADERS);
+  const slot = findSlot_(slotsSheet, slotId, slotLabel);
+
+  if (slot.rowNumber) {
+    const remaining = Number(slot.row[SLOT_HEADERS.indexOf('残席')] || 0);
+    if (remaining <= 0) throw new Error('この日程は満員です。');
+    slotsSheet.getRange(slot.rowNumber, SLOT_HEADERS.indexOf('残席') + 1).setValue(remaining - 1);
+    slotsSheet.getRange(slot.rowNumber, SLOT_HEADERS.indexOf('更新日時') + 1).setValue(new Date());
+  }
+
+  const finalSlotLabel = slot.label || slotLabel;
+  const reservationsSheet = getSheet_(BOOKING_CONFIG.reservationsSheetName, RESERVATION_HEADERS);
+  reservationsSheet.appendRow([
+    new Date(),
+    '予約済み',
+    name,
+    email,
+    phone,
+    finalSlotLabel,
+    slotId,
+    experience,
+    interest,
+    BOOKING_CONFIG.zoomUrl,
+    coupon,
+    '未参加',
+    '未申込',
+    '',
+    '未申込',
+    source,
+    '',
+  ]);
+
+  GmailApp.sendEmail(email, '【AI LIFE ACADEMY】無料説明会の予約を受け付けました', buildReservationMail_({
+    name,
+    slot: finalSlotLabel,
+    zoomUrl: BOOKING_CONFIG.zoomUrl,
+    coupon,
+  }), {
+    name: BOOKING_CONFIG.senderName,
+    replyTo: BOOKING_CONFIG.adminEmail,
+  });
+
+  GmailApp.sendEmail(BOOKING_CONFIG.adminEmail, '【AI LIFE ACADEMY】無料説明会の予約が入りました',
+    `無料説明会の予約が入りました。\n\n氏名: ${name}\nメール: ${email}\n電話番号: ${phone}\n希望日程: ${finalSlotLabel}\nAI経験: ${experience}\n知りたいこと: ${interest}\nクーポン: ${coupon}`,
+    { name: BOOKING_CONFIG.senderName }
+  );
+
+  return { ok: true, reserved: true, slot: finalSlotLabel };
+}
+
+function addSlot_(e) {
+  const sheet = getSheet_(BOOKING_CONFIG.slotsSheetName, SLOT_HEADERS);
+  const now = new Date();
+  const id = `slot_${Utilities.formatDate(now, 'Asia/Tokyo', 'yyyyMMddHHmmss')}_${Math.floor(Math.random() * 10000)}`;
+  const capacity = Number(getParam_(e, 'capacity') || 1);
+  const remaining = Number(getParam_(e, 'remaining') || capacity);
+
+  sheet.appendRow([
+    id,
+    getParam_(e, 'weekLabel'),
+    getParam_(e, 'date'),
+    getParam_(e, 'time'),
+    getParam_(e, 'note') || 'オンラインZoom説明会',
+    capacity,
+    remaining,
+    getParam_(e, 'isPublic') === 'FALSE' ? 'FALSE' : 'TRUE',
+    now,
+    now,
+  ]);
+
+  return { ok: true, slotId: id };
+}
+
+function deleteSlot_(e) {
+  const sheet = getSheet_(BOOKING_CONFIG.slotsSheetName, SLOT_HEADERS);
+  const rowNumber = findRowBySlotId_(sheet, getParam_(e, 'slotId'));
+  if (!rowNumber) throw new Error('日程が見つかりません。');
+  sheet.deleteRow(rowNumber);
+  return { ok: true, deleted: true };
+}
+
+function updateSlot_(e) {
+  const sheet = getSheet_(BOOKING_CONFIG.slotsSheetName, SLOT_HEADERS);
+  const rowNumber = findRowBySlotId_(sheet, getParam_(e, 'slotId'));
+  if (!rowNumber) throw new Error('日程が見つかりません。');
+
+  const updates = {
+    '週ラベル': getParam_(e, 'weekLabel'),
+    '日付': getParam_(e, 'date'),
+    '時間': getParam_(e, 'time'),
+    'メモ': getParam_(e, 'note'),
+    '定員': getParam_(e, 'capacity'),
+    '残席': getParam_(e, 'remaining'),
+    '公開': getParam_(e, 'isPublic'),
+  };
+
+  Object.keys(updates).forEach((header) => {
+    if (updates[header] !== '') {
+      sheet.getRange(rowNumber, SLOT_HEADERS.indexOf(header) + 1).setValue(updates[header]);
+    }
+  });
+  sheet.getRange(rowNumber, SLOT_HEADERS.indexOf('更新日時') + 1).setValue(new Date());
+
+  return { ok: true, updated: true };
+}
+
+function updateReservationStatus_(e) {
+  const sheet = getSheet_(BOOKING_CONFIG.reservationsSheetName, RESERVATION_HEADERS);
+  const email = normalizeEmail_(getParam_(e, 'email'));
+  if (!email) throw new Error('メールアドレスがありません。');
+
+  const rowNumber = findLatestReservationRowByEmail_(sheet, email);
+  if (!rowNumber) throw new Error('予約者が見つかりません。');
+
+  const statusUpdates = {
+    '予約ステータス': getParam_(e, 'reservationStatus'),
+    '説明会ステータス': getParam_(e, 'briefingStatus'),
+    '決済ステータス': getParam_(e, 'paymentStatus'),
+    '返金ステータス': getParam_(e, 'refundStatus'),
+    '購入者ステータス': getParam_(e, 'purchaserStatus'),
+    'メモ': getParam_(e, 'memo'),
+  };
+
+  Object.keys(statusUpdates).forEach((header) => {
+    if (statusUpdates[header] !== '') {
+      sheet.getRange(rowNumber, RESERVATION_HEADERS.indexOf(header) + 1).setValue(statusUpdates[header]);
+    }
+  });
+
+  return { ok: true, updated: true };
+}
+
+function getPublicSlotGroups_(includePrivate) {
+  const sheet = getSheet_(BOOKING_CONFIG.slotsSheetName, SLOT_HEADERS);
+  if (sheet.getLastRow() <= 1) seedSlots_(sheet);
+
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, SLOT_HEADERS.length).getValues();
+  const groups = {};
+
+  values.forEach((row) => {
+    const isPublic = row[SLOT_HEADERS.indexOf('公開')] !== 'FALSE';
+    if (!includePrivate && !isPublic) return;
+
+    const weekLabel = row[SLOT_HEADERS.indexOf('週ラベル')] || '予約可能日程';
+    if (!groups[weekLabel]) groups[weekLabel] = { label: weekLabel, slots: [] };
+
+    const date = row[SLOT_HEADERS.indexOf('日付')];
+    const time = row[SLOT_HEADERS.indexOf('時間')];
+    groups[weekLabel].slots.push({
+      id: row[SLOT_HEADERS.indexOf('slotId')],
+      date,
+      time,
+      label: `${date} ${time}`,
+      note: row[SLOT_HEADERS.indexOf('メモ')],
+      capacity: Number(row[SLOT_HEADERS.indexOf('定員')] || 0),
+      remaining: Number(row[SLOT_HEADERS.indexOf('残席')] || 0),
+      isPublic,
+    });
+  });
+
+  return Object.keys(groups).map((key) => groups[key]);
+}
+
+function seedSlots_(sheet) {
+  [
+    ['seed_20260710_2000', '7月10日（金）〜7月16日（木）', '7月10日（金）', '20:00〜21:00', 'オンラインZoom説明会', 5, 5, 'TRUE'],
+    ['seed_20260712_2100', '7月10日（金）〜7月16日（木）', '7月12日（日）', '21:00〜22:00', 'オンラインZoom説明会', 5, 3, 'TRUE'],
+    ['seed_20260714_2000', '7月10日（金）〜7月16日（木）', '7月14日（火）', '20:00〜21:00', 'オンラインZoom説明会', 5, 0, 'TRUE'],
+  ].forEach((item) => {
+    sheet.appendRow(item.concat([new Date(), new Date()]));
+  });
+}
+
+function findSlot_(sheet, slotId, slotLabel) {
+  if (sheet.getLastRow() <= 1) return {};
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, SLOT_HEADERS.length).getValues();
+  const rowIndex = values.findIndex((row) => {
+    const label = `${row[SLOT_HEADERS.indexOf('日付')]} ${row[SLOT_HEADERS.indexOf('時間')]}`;
+    return (slotId && row[SLOT_HEADERS.indexOf('slotId')] === slotId) || (slotLabel && label === slotLabel);
+  });
+  if (rowIndex === -1) return {};
+  const row = values[rowIndex];
+  return {
+    row,
+    rowNumber: rowIndex + 2,
+    label: `${row[SLOT_HEADERS.indexOf('日付')]} ${row[SLOT_HEADERS.indexOf('時間')]}`,
+  };
+}
+
+function findRowBySlotId_(sheet, slotId) {
+  if (!slotId || sheet.getLastRow() <= 1) return 0;
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues().flat();
+  const index = values.indexOf(slotId);
+  return index === -1 ? 0 : index + 2;
+}
+
+function findLatestReservationRowByEmail_(sheet, email) {
+  if (sheet.getLastRow() <= 1) return 0;
+  const emailColumn = RESERVATION_HEADERS.indexOf('メールアドレス') + 1;
+  const values = sheet.getRange(2, emailColumn, sheet.getLastRow() - 1, 1).getValues().flat();
+  for (let i = values.length - 1; i >= 0; i -= 1) {
+    if (normalizeEmail_(values[i]) === email) return i + 2;
+  }
+  return 0;
+}
+
+function getSheet_(sheetName, headers) {
+  const spreadsheet = getSpreadsheet_();
+  const sheet = spreadsheet.getSheetByName(sheetName) || spreadsheet.insertSheet(sheetName);
+  ensureHeaders_(sheet, headers);
+  return sheet;
+}
+
+function getSpreadsheet_() {
+  const properties = PropertiesService.getScriptProperties();
+  const spreadsheetId = properties.getProperty('BOOKING_SPREADSHEET_ID');
+  if (spreadsheetId) return SpreadsheetApp.openById(spreadsheetId);
+
+  const spreadsheet = SpreadsheetApp.create(BOOKING_CONFIG.spreadsheetName);
+  properties.setProperty('BOOKING_SPREADSHEET_ID', spreadsheet.getId());
+  return spreadsheet;
+}
+
+function ensureHeaders_(sheet, headers) {
+  if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.setFrozenRows(1);
+    return;
+  }
+
+  const current = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), headers.length)).getValues()[0];
+  headers.forEach((header) => {
+    if (!current.includes(header)) {
+      sheet.getRange(1, sheet.getLastColumn() + 1).setValue(header);
+    }
+  });
+}
+
+function buildReservationMail_(data) {
+  return `${data.name} 様
+
+AI LIFE ACADEMY 無料説明会のご予約ありがとうございます。
+
+━━━━━━━━━━━━━━━━━━
+予約内容
+━━━━━━━━━━━━━━━━━━
+
+日程: ${data.slot}
+Zoom: ${data.zoomUrl}
+
+説明会参加者限定クーポン:
+${data.coupon}
+
+説明会後に講座へお申し込みいただく場合、Stripe決済ページでクーポンコードをご利用ください。
+
+当日はお時間になりましたらZoomへご参加ください。
+
+あいらいふ運営事務局`;
+}
+
+function assertAdmin_(e) {
+  const savedKey = PropertiesService.getScriptProperties().getProperty('BOOKING_ADMIN_KEY');
+  if (!savedKey) throw new Error('BOOKING_ADMIN_KEYが未設定です。');
+  if (getParam_(e, 'adminKey') !== savedKey) throw new Error('管理キーが違います。');
+}
+
+function output_(e, data) {
+  const callback = getParam_(e, 'callback');
+  const body = callback ? `${callback}(${JSON.stringify(data)});` : JSON.stringify(data);
+  const mimeType = callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON;
+  return ContentService.createTextOutput(body).setMimeType(mimeType);
+}
+
+function getParam_(e, key) {
+  return String(e && e.parameter && e.parameter[key] || '').trim();
+}
+
+function normalizeEmail_(email) {
+  return String(email || '').trim().toLowerCase();
+}
