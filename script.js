@@ -52,6 +52,7 @@ const bookingForm = document.querySelector("#bookingForm");
 const bookingSlotsContainer = document.querySelector("#bookingSlots");
 const bookingZoomUrl = "https://us05web.zoom.us/j/87362640884?pwd=K1hsImx0aSZtk5du0V5NtHF1UwCAXs.1";
 const bookingConfig = window.AI_LIFE_BOOKING_CONFIG || {};
+let bookingCalendarMonth = null;
 
 function fetchJsonp(url) {
   return new Promise((resolve, reject) => {
@@ -131,6 +132,21 @@ function buildCalendarSlots(slots) {
   return grouped;
 }
 
+function getMonthStart(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date, amount) {
+  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
+}
+
+function getInitialCalendarMonth(slotMap) {
+  const today = getMonthStart(new Date());
+  const dates = [...slotMap.values()].map((item) => item.date).sort((a, b) => a - b);
+  const upcoming = dates.find((date) => getMonthStart(date) >= today);
+  return getMonthStart(upcoming || dates[0] || new Date());
+}
+
 function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   if (!bookingSlotsContainer) return;
 
@@ -154,8 +170,8 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   selected.textContent = "空き日程をタップしてください。";
 
   const slotMap = buildCalendarSlots(slots);
-  const firstDate = [...slotMap.values()].map((item) => item.date).sort((a, b) => a - b)[0] || new Date();
-  const calendarStart = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+  if (!bookingCalendarMonth) bookingCalendarMonth = getInitialCalendarMonth(slotMap);
+  const calendarStart = getMonthStart(bookingCalendarMonth);
   const daysInMonth = new Date(calendarStart.getFullYear(), calendarStart.getMonth() + 1, 0).getDate();
   const offset = calendarStart.getDay();
 
@@ -164,8 +180,27 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   const title = document.createElement("h3");
   title.textContent = formatMonthTitle(calendarStart);
   const legend = document.createElement("span");
-  legend.textContent = "残席のある日程を選択";
-  header.append(title, legend);
+  legend.textContent = "空き日程を選択";
+  const controls = document.createElement("div");
+  controls.className = "calendar-month-controls";
+  const previousButton = document.createElement("button");
+  previousButton.type = "button";
+  previousButton.textContent = "前の月";
+  const nextButton = document.createElement("button");
+  nextButton.type = "button";
+  nextButton.textContent = "次の月";
+  const currentMonth = getMonthStart(new Date());
+  previousButton.disabled = calendarStart <= currentMonth;
+  previousButton.addEventListener("click", () => {
+    bookingCalendarMonth = addMonths(calendarStart, -1);
+    renderBookingSlots(weeksSource);
+  });
+  nextButton.addEventListener("click", () => {
+    bookingCalendarMonth = addMonths(calendarStart, 1);
+    renderBookingSlots(weeksSource);
+  });
+  controls.append(previousButton, nextButton);
+  header.append(title, legend, controls);
 
   const grid = document.createElement("div");
   grid.className = "calendar-grid";
@@ -205,7 +240,7 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
       time.textContent = representative.time || "時間未定";
       const seat = document.createElement("em");
       const remaining = Number(representative.remaining ?? representative.capacity ?? 0);
-      seat.textContent = isFull ? "満員御礼" : `残席 ${remaining}`;
+      seat.textContent = isFull ? "満員御礼" : "受付中";
       cell.append(time, seat);
 
       const input = document.createElement("input");
@@ -233,6 +268,14 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
     grid.append(cell);
   }
 
+  const hasMonthSlots = [...slotMap.values()].some((entry) => {
+    const month = getMonthStart(entry.date);
+    return month.getTime() === calendarStart.getTime();
+  });
+  if (!hasMonthSlots) {
+    selected.textContent = "この月の公開枠はまだありません。次の月も確認できます。";
+  }
+
   calendar.append(header, grid, selected);
   bookingSlotsContainer.append(calendar);
 }
@@ -246,6 +289,7 @@ async function loadManagedBookingSlots() {
   try {
     const data = await fetchJsonp(`${endpoint}?action=slots`);
     if (data && data.ok && Array.isArray(data.weeks)) {
+      bookingCalendarMonth = null;
       renderBookingSlots(data.weeks);
     }
   } catch (error) {

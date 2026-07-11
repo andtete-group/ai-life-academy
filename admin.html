@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>予約管理 | あいらいふ（AI LIFE）</title>
     <meta name="robots" content="noindex" />
-    <link rel="stylesheet" href="styles.css?v=20260709-booking2" />
+    <link rel="stylesheet" href="styles.css?v=20260712-hero-booking" />
   </head>
   <body>
     <header class="site-header" aria-label="サイトヘッダー">
@@ -62,16 +62,27 @@
             </div>
             <div class="form-grid">
               <label>
-                <span>日付表示</span>
-                <input type="text" name="date" placeholder="7月10日（金）" required />
+                <span>日付</span>
+                <input type="date" name="dateIso" required />
               </label>
               <label>
-                <span>時間表示</span>
-                <input type="text" name="time" placeholder="20:00〜21:00" required />
-              </label>
-              <label>
-                <span>週ラベル</span>
-                <input type="text" name="weekLabel" placeholder="7月10日（金）〜7月16日（木）" required />
+                <span>開始時間</span>
+                <select name="startTime" required>
+                  <option value="">選択してください</option>
+                  <option>09:00</option>
+                  <option>10:00</option>
+                  <option>11:00</option>
+                  <option>12:00</option>
+                  <option>13:00</option>
+                  <option>14:00</option>
+                  <option>15:00</option>
+                  <option>16:00</option>
+                  <option>17:00</option>
+                  <option>18:00</option>
+                  <option>19:00</option>
+                  <option>20:00</option>
+                  <option>21:00</option>
+                </select>
               </label>
               <label>
                 <span>定員</span>
@@ -106,8 +117,8 @@
       </section>
     </main>
 
-    <script src="booking-slots.js?v=20260709-booking2"></script>
-    <script src="script.js?v=20260709-booking2"></script>
-    <script src="admin.js?v=20260709-booking2"></script>
+    <script src="booking-slots.js?v=20260712-hero-booking"></script>
+    <script src="script.js?v=20260712-hero-booking"></script>
+    <script src="admin.js?v=20260712-hero-booking"></script>
   </body>
 </html>

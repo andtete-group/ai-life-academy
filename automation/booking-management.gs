@@ -174,12 +174,15 @@ function addSlot_(e) {
   const id = `slot_${Utilities.formatDate(now, 'Asia/Tokyo', 'yyyyMMddHHmmss')}_${Math.floor(Math.random() * 10000)}`;
   const capacity = Number(getParam_(e, 'capacity') || 1);
   const remaining = Number(getParam_(e, 'remaining') || capacity);
+  const date = getParam_(e, 'date');
+  const time = getParam_(e, 'time');
+  const weekLabel = getParam_(e, 'weekLabel') || buildMonthLabel_(date);
 
   sheet.appendRow([
     id,
-    getParam_(e, 'weekLabel'),
-    getParam_(e, 'date'),
-    getParam_(e, 'time'),
+    weekLabel,
+    date,
+    time,
     getParam_(e, 'note') || 'オンラインZoom説明会',
     capacity,
     remaining,
@@ -189,6 +192,14 @@ function addSlot_(e) {
   ]);
 
   return { ok: true, slotId: id };
+}
+
+function buildMonthLabel_(dateText) {
+  const text = String(dateText || '');
+  const yearMatch = text.match(/(\d{4})年/);
+  const monthMatch = text.match(/(\d{1,2})月/);
+  if (!monthMatch) return '予約可能日程';
+  return `${yearMatch ? `${yearMatch[1]}年` : ''}${monthMatch[1]}月`;
 }
 
 function deleteSlot_(e) {

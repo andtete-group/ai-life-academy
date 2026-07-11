@@ -8,6 +8,7 @@ const adminState = {
   endpoint: localStorage.getItem("aiLifeBookingApi") || adminBookingConfig.apiEndpoint || "",
   key: localStorage.getItem("aiLifeBookingAdminKey") || "",
 };
+const adminWeekdays = ["日", "月", "火", "水", "木", "金", "土"];
 
 function setAdminStatus(message) {
   if (!adminStatus) return;
@@ -50,6 +51,34 @@ function postAdminAction(action, data = {}) {
     headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
     body: body.toString(),
   });
+}
+
+function parseDateInput(value) {
+  if (!value) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function formatJapaneseDate(value) {
+  const date = parseDateInput(value);
+  if (!date) return "";
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日（${adminWeekdays[date.getDay()]}）`;
+}
+
+function formatMonthLabel(value) {
+  const date = parseDateInput(value);
+  if (!date) return "予約可能日程";
+  return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+}
+
+function buildTimeRange(startTime) {
+  const match = String(startTime || "").match(/^(\d{2}):(\d{2})$/);
+  if (!match) return "";
+  const startHour = Number(match[1]);
+  const minute = match[2];
+  const endHour = String((startHour + 1) % 24).padStart(2, "0");
+  return `${startTime}〜${endHour}:${minute}`;
 }
 
 function renderAdminSlots(weeks) {
@@ -149,10 +178,20 @@ if (slotForm) {
     }
 
     const data = new FormData(slotForm);
+    const dateIso = data.get("dateIso") || "";
+    const startTime = data.get("startTime") || "";
+    const date = formatJapaneseDate(dateIso);
+    const time = buildTimeRange(startTime);
+
+    if (!date || !time) {
+      setAdminStatus("日付と開始時間を選択してください。");
+      return;
+    }
+
     await postAdminAction("addSlot", {
-      weekLabel: data.get("weekLabel") || "",
-      date: data.get("date") || "",
-      time: data.get("time") || "",
+      weekLabel: formatMonthLabel(dateIso),
+      date,
+      time,
       capacity: data.get("capacity") || "5",
       remaining: data.get("capacity") || "5",
       note: data.get("note") || "オンラインZoom説明会",
