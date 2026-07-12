@@ -1197,12 +1197,13 @@ h3 {
 .roadmap-panel {
   position: relative;
   overflow: hidden;
-  border-color: rgba(124, 232, 255, 0.2);
+  border-color: rgba(27, 113, 229, 0.14);
   background:
-    linear-gradient(180deg, rgba(2, 8, 18, 0.88), rgba(3, 24, 48, 0.88)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 250, 255, 0.9)),
     url("assets/hero-ai-learning.png") center / cover;
-  color: #ffffff;
+  color: var(--ink);
   isolation: isolate;
+  box-shadow: 0 24px 70px rgba(10, 36, 60, 0.1);
 }
 
 .roadmap-panel::before {
@@ -1210,19 +1211,21 @@ h3 {
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(90deg, rgba(99, 244, 255, 0.12) 0 1px, transparent 1px),
-    linear-gradient(180deg, rgba(99, 244, 255, 0.08) 0 1px, transparent 1px);
+    linear-gradient(90deg, rgba(27, 113, 229, 0.11) 0 1px, transparent 1px),
+    linear-gradient(180deg, rgba(20, 216, 198, 0.08) 0 1px, transparent 1px),
+    radial-gradient(circle at 18% 12%, rgba(99, 244, 255, 0.22), transparent 30%);
   background-size: 58px 58px;
   content: "";
-  mask-image: linear-gradient(180deg, #000, transparent 86%);
+  opacity: 0.78;
+  mask-image: linear-gradient(180deg, #000, rgba(0, 0, 0, 0.34) 86%);
 }
 
 .roadmap-panel .eyebrow {
-  color: #7ce8ff;
+  color: var(--blue);
 }
 
 .roadmap-panel h3 {
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .day-roadmap {
@@ -1231,10 +1234,11 @@ h3 {
 
 .day-roadmap article {
   position: relative;
-  border-color: rgba(124, 232, 255, 0.18);
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  backdrop-filter: blur(14px);
+  border-color: rgba(27, 113, 229, 0.14);
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--ink);
+  box-shadow: 0 16px 42px rgba(10, 36, 60, 0.08);
+  backdrop-filter: blur(12px);
 }
 
 .day-roadmap article:not(:last-child)::after {
@@ -1244,18 +1248,18 @@ h3 {
   z-index: 2;
   width: 26px;
   height: 26px;
-  border-top: 2px solid rgba(124, 232, 255, 0.8);
-  border-right: 2px solid rgba(124, 232, 255, 0.8);
+  border-top: 2px solid rgba(22, 135, 255, 0.58);
+  border-right: 2px solid rgba(22, 135, 255, 0.58);
   content: "";
   transform: translateY(-50%) rotate(45deg);
 }
 
 .day-roadmap span {
-  color: #7ce8ff;
+  color: var(--blue);
 }
 
 .day-roadmap p {
-  color: rgba(255, 255, 255, 0.76);
+  color: var(--muted);
 }
 
 .comparison-section {
