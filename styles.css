@@ -1026,6 +1026,334 @@ h3 {
   margin-top: 24px;
 }
 
+.reason-band {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(2, 8, 18, 0.94), rgba(2, 20, 42, 0.86)),
+    url("assets/hero-ai-enterprise-bg.jpg") center / cover fixed;
+}
+
+.reason-band::before {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(99, 244, 255, 0.14) 0 1px, transparent 1px),
+    linear-gradient(180deg, rgba(99, 244, 255, 0.08) 0 1px, transparent 1px);
+  background-size: 68px 68px;
+  content: "";
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.reason-band .section-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.reason-line {
+  display: block;
+}
+
+.reason-grid h2 {
+  line-height: 1.18;
+}
+
+.reason-grid p:not(.eyebrow) {
+  padding: clamp(22px, 3vw, 30px);
+  border: 1px solid rgba(124, 232, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(5, 18, 43, 0.5);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
+}
+
+.worry-grid {
+  gap: 18px;
+}
+
+.worry-grid article {
+  position: relative;
+  min-height: 322px;
+  overflow: hidden;
+  padding: 20px;
+  border-color: rgba(27, 113, 229, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 250, 255, 0.92)),
+    radial-gradient(circle at 12% 8%, rgba(20, 216, 198, 0.14), transparent 32%);
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+}
+
+.worry-grid article::before {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(99, 244, 255, 0.16);
+  content: "";
+  pointer-events: none;
+}
+
+.worry-grid article::after {
+  position: absolute;
+  right: -34px;
+  bottom: -34px;
+  width: 108px;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(27, 113, 229, 0.18), transparent 68%);
+  content: "";
+  pointer-events: none;
+}
+
+.worry-visual {
+  position: relative;
+  height: 92px;
+  overflow: hidden;
+  border: 1px solid rgba(27, 113, 229, 0.16);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 24% 28%, rgba(99, 244, 255, 0.8) 0 4px, transparent 5px),
+    radial-gradient(circle at 72% 38%, rgba(27, 113, 229, 0.8) 0 4px, transparent 5px),
+    radial-gradient(circle at 46% 70%, rgba(16, 184, 117, 0.72) 0 4px, transparent 5px),
+    linear-gradient(135deg, #06152f, #0a3562 58%, #0a6e8a);
+  box-shadow: inset 0 0 30px rgba(99, 244, 255, 0.12);
+}
+
+.worry-visual::before,
+.worry-visual::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.worry-visual::before {
+  inset: 18px 22px;
+  border-top: 1px solid rgba(99, 244, 255, 0.68);
+  border-right: 1px solid rgba(99, 244, 255, 0.36);
+  transform: skewY(-13deg);
+}
+
+.worry-visual::after {
+  right: 14px;
+  bottom: 14px;
+  width: 44px;
+  height: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: -64px -24px 0 -10px rgba(255, 255, 255, 0.16);
+}
+
+.worry-prompt .worry-visual {
+  background:
+    linear-gradient(90deg, transparent 0 18%, rgba(99, 244, 255, 0.34) 18% 20%, transparent 20% 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 18px),
+    linear-gradient(135deg, #05162e, #14225c 54%, #423f92);
+}
+
+.worry-work .worry-visual {
+  background:
+    radial-gradient(circle at 22% 24%, rgba(99, 244, 255, 0.85) 0 4px, transparent 5px),
+    linear-gradient(90deg, rgba(99, 244, 255, 0.36) 0 2px, transparent 2px 100%),
+    linear-gradient(135deg, #05162e, #0a3b5a 55%, #0b796f);
+  background-size: auto, 22px 100%, auto;
+}
+
+.worry-future .worry-visual {
+  background:
+    conic-gradient(from 130deg at 50% 60%, rgba(99, 244, 255, 0.72), transparent 34%, rgba(27, 113, 229, 0.72), transparent 74%, rgba(99, 244, 255, 0.72)),
+    linear-gradient(135deg, #06152f, #0b2148 58%, #06152f);
+}
+
+.worry-grid span {
+  margin-top: 16px;
+}
+
+.worry-grid h3 {
+  margin-top: 18px;
+}
+
+.online-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(244, 250, 255, 0.88)),
+    url("assets/work-codex.png") right center / min(46vw, 620px) auto no-repeat;
+}
+
+.online-section .split-layout {
+  padding: clamp(26px, 4vw, 42px);
+  border: 1px solid rgba(27, 113, 229, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 70px rgba(10, 36, 60, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.online-section .image-panel {
+  border-color: rgba(27, 113, 229, 0.22);
+  box-shadow: 0 24px 70px rgba(27, 113, 229, 0.14);
+}
+
+.roadmap-panel {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(124, 232, 255, 0.2);
+  background:
+    linear-gradient(180deg, rgba(2, 8, 18, 0.88), rgba(3, 24, 48, 0.88)),
+    url("assets/hero-ai-learning.png") center / cover;
+  color: #ffffff;
+  isolation: isolate;
+}
+
+.roadmap-panel::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(99, 244, 255, 0.12) 0 1px, transparent 1px),
+    linear-gradient(180deg, rgba(99, 244, 255, 0.08) 0 1px, transparent 1px);
+  background-size: 58px 58px;
+  content: "";
+  mask-image: linear-gradient(180deg, #000, transparent 86%);
+}
+
+.roadmap-panel .eyebrow {
+  color: #7ce8ff;
+}
+
+.roadmap-panel h3 {
+  color: #ffffff;
+}
+
+.day-roadmap {
+  position: relative;
+}
+
+.day-roadmap article {
+  position: relative;
+  border-color: rgba(124, 232, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  backdrop-filter: blur(14px);
+}
+
+.day-roadmap article:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: -18px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border-top: 2px solid rgba(124, 232, 255, 0.8);
+  border-right: 2px solid rgba(124, 232, 255, 0.8);
+  content: "";
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.day-roadmap span {
+  color: #7ce8ff;
+}
+
+.day-roadmap p {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.comparison-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(248, 253, 255, 0.96), rgba(239, 250, 246, 0.94)),
+    url("assets/funnel-flow.png") center / cover fixed;
+}
+
+.comparison-table {
+  position: relative;
+  border-color: rgba(27, 113, 229, 0.16);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 80px rgba(10, 36, 60, 0.13);
+  backdrop-filter: blur(10px);
+}
+
+.comparison-table .head {
+  background: linear-gradient(135deg, #06152f, #0a4f84 58%, #08796f);
+}
+
+.comparison-table .row:not(.head) > div:first-child {
+  color: #10211d;
+  font-weight: 900;
+}
+
+.comparison-table .row:not(.head) > div:nth-child(2) {
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(20, 216, 198, 0.16), rgba(22, 135, 255, 0.12)),
+    #f4fdff;
+  color: #064f78;
+}
+
+.comparison-table .row:not(.head) > div:nth-child(2)::before {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #14d8c6;
+  box-shadow: 0 0 16px rgba(20, 216, 198, 0.8);
+  content: "";
+}
+
+.flow-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(238, 248, 241, 0.92), rgba(244, 250, 255, 0.92)),
+    radial-gradient(circle at 12% 18%, rgba(22, 135, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 88% 80%, rgba(16, 184, 117, 0.14), transparent 26%);
+}
+
+.flow-diagram {
+  position: relative;
+  gap: 18px;
+}
+
+.flow-diagram article {
+  overflow: hidden;
+  border-color: rgba(27, 113, 229, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 250, 255, 0.94));
+}
+
+.flow-diagram article::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #14d8c6, #1687ff);
+  content: "";
+}
+
+.flow-diagram article:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  border-top: 2px solid rgba(22, 135, 255, 0.55);
+  border-right: 2px solid rgba(22, 135, 255, 0.55);
+  background: rgba(255, 255, 255, 0.86);
+  content: "";
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.flow-diagram span {
+  border-radius: 999px;
+  background: linear-gradient(135deg, #06152f, #0a4f84 58%, #14d8c6);
+  box-shadow: 0 14px 34px rgba(22, 135, 255, 0.24);
+}
+
 .faq-list {
   display: grid;
   gap: 10px;
@@ -2345,6 +2673,11 @@ h3 {
   .comparison-table .row {
     min-width: 820px;
   }
+
+  .day-roadmap article:not(:last-child)::after,
+  .flow-diagram article:not(:last-child)::after {
+    display: none;
+  }
 }
 
 @media (max-width: 720px) {
@@ -2438,6 +2771,23 @@ h3 {
 
   .calendar-grid {
     gap: 5px;
+  }
+
+  .reason-grid p:not(.eyebrow),
+  .online-section .split-layout {
+    padding: 20px;
+  }
+
+  .worry-grid article {
+    min-height: 280px;
+  }
+
+  .worry-visual {
+    height: 82px;
+  }
+
+  .roadmap-panel {
+    background-attachment: scroll;
   }
 
   .calendar-header {
