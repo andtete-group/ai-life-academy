@@ -2,9 +2,10 @@ const CONFIG = {
   adminEmail: 'rakuichi644@gmail.com',
   senderName: 'あいらいふ運営事務局',
   productName: 'AI LIFE ACADEMY',
-  memberFolderId: '1dVWdYweunGZFYTcCIen3xcdrnMBsKh00',
-  memberFolderUrl: 'https://drive.google.com/drive/folders/1dVWdYweunGZFYTcCIen3xcdrnMBsKh00',
+  memberSiteUrl: 'https://andtete-group.github.io/ai-life-roadmap/',
+  supabaseUrl: 'https://hahdvhvvasefphriviga.supabase.co',
   spreadsheetName: 'AI LIFE ACADEMY_購入者管理',
+  purchaserSpreadsheetId: '1zRcSUefAtjQrFqC_wxJUChL90-2ffqXNhTHM7Y6F7ow',
   sheetName: '購入者管理',
 };
 
@@ -20,7 +21,11 @@ const HEADERS = [
   'Charge ID',
   '金額',
   '通貨',
-  'Drive権限',
+  '簡易サイトURL',
+  'ユーザー名',
+  'パスワード',
+  'Supabase User ID',
+  'アカウント状態',
   'メール送信',
   '購入者ステータス',
   'メモ',
@@ -78,12 +83,13 @@ function handleCheckoutCompleted_(event) {
     return json_({ ok: true, duplicated: true });
   }
 
-  const folder = DriveApp.getFolderById(CONFIG.memberFolderId);
-  folder.addViewer(email);
+  const credentials = createMemberAccount_({ name, customerEmail: email });
 
-  GmailApp.sendEmail(email, `【${CONFIG.productName}】会員コンテンツのご案内`, buildMemberWelcomeMail_({
+  GmailApp.sendEmail(email, `【${CONFIG.productName}】会員サイトのログイン情報`, buildMemberWelcomeMail_({
     name,
-    memberFolderUrl: CONFIG.memberFolderUrl,
+    memberSiteUrl: CONFIG.memberSiteUrl,
+    username: credentials.username,
+    password: credentials.password,
   }), {
     name: CONFIG.senderName,
     replyTo: CONFIG.adminEmail,
@@ -99,7 +105,11 @@ function handleCheckoutCompleted_(event) {
     paymentIntentId: session.payment_intent,
     amount: session.amount_total,
     currency: session.currency,
-    driveStatus: '付与済み',
+    memberSiteUrl: CONFIG.memberSiteUrl,
+    username: credentials.username,
+    password: credentials.password,
+    supabaseUserId: credentials.userId,
+    accountStatus: '有効',
     mailStatus: '送信済み',
     purchaserStatus: '決済済み',
   });
@@ -132,8 +142,8 @@ function handleRefund_(event) {
       paymentIntentId,
       memo: '返金イベントから購入者メールを特定できませんでした。Stripe管理画面で確認してください。',
     });
-    GmailApp.sendEmail(CONFIG.adminEmail, '【AI LIFE ACADEMY】返金者の権限削除確認が必要です',
-      `返金イベントを受信しましたが、メールアドレスを特定できませんでした。\n\nStripeイベントID: ${event.id}\nCharge ID: ${chargeId || '不明'}\nPayment Intent ID: ${paymentIntentId || '不明'}\n\nStripe管理画面で購入者を確認し、Google Driveの共有権限を手動で削除してください。`,
+    GmailApp.sendEmail(CONFIG.adminEmail, '【AI LIFE ACADEMY】返金者のアカウント停止確認が必要です',
+      `返金イベントを受信しましたが、メールアドレスを特定できませんでした。\n\nStripeイベントID: ${event.id}\nCharge ID: ${chargeId || '不明'}\nPayment Intent ID: ${paymentIntentId || '不明'}\n\nStripe管理画面で購入者を確認し、Supabaseの会員アカウントを手動で停止してください。`,
       { name: CONFIG.senderName }
     );
     return json_({ ok: true, needsCheck: true });
@@ -148,7 +158,7 @@ function handleRefund_(event) {
       eventType: event.type,
       chargeId,
       paymentIntentId,
-      driveStatus: '処理済み',
+      accountStatus: '処理済み',
       mailStatus: '送信なし',
       purchaserStatus: '返金済み',
       memo: 'すでに返金・権限削除済みのため、重複通知を停止しました。',
@@ -156,14 +166,13 @@ function handleRefund_(event) {
     return json_({ ok: true, alreadyRefunded: true, email: purchaser.email });
   }
 
-  let driveStatus = '削除済み';
-  let driveMemo = '';
+  let accountStatus = '停止済み';
+  let accountMemo = '';
   try {
-    const folder = DriveApp.getFolderById(CONFIG.memberFolderId);
-    folder.removeViewer(purchaser.email);
+    if (purchaser.supabaseUserId) deleteMemberAccount_(purchaser.supabaseUserId);
   } catch (error) {
-    driveStatus = '削除済み/要確認';
-    driveMemo = `Drive権限削除時の注意: ${error.message}`;
+    accountStatus = '停止要確認';
+    accountMemo = `Supabaseアカウント停止時の注意: ${error.message}`;
   }
 
   markPurchaserRefunded_(sheet, purchaser, {
@@ -171,12 +180,12 @@ function handleRefund_(event) {
     eventType: event.type,
     chargeId,
     paymentIntentId,
-    driveStatus,
-    memo: driveMemo,
+    accountStatus,
+    memo: accountMemo,
   });
 
   GmailApp.sendEmail(CONFIG.adminEmail, '【AI LIFE ACADEMY】返金者の会員権限を削除しました',
-    `以下のメールアドレスを会員コンテンツから削除しました。\n\n${purchaser.email}\n\nStripeイベントID: ${event.id}\nDrive権限: ${driveStatus}${driveMemo ? `\n${driveMemo}` : ''}`,
+    `以下の購入者アカウントを停止しました。\n\n${purchaser.email}\nユーザー名: ${purchaser.username || '不明'}\n\nStripeイベントID: ${event.id}\nアカウント状態: ${accountStatus}${accountMemo ? `\n${accountMemo}` : ''}`,
     { name: CONFIG.senderName }
   );
 
@@ -188,10 +197,12 @@ function handleRefund_(event) {
     eventType: event.type,
     chargeId,
     paymentIntentId,
-    driveStatus,
+    username: purchaser.username,
+    supabaseUserId: purchaser.supabaseUserId,
+    accountStatus,
     mailStatus: '運営へ通知済み',
     purchaserStatus: '返金済み',
-    memo: driveMemo,
+    memo: accountMemo,
   });
 
   return json_({ ok: true, removed: true, email: purchaser.email });
@@ -220,18 +231,79 @@ function fetchStripeEvent_(eventId) {
   return JSON.parse(body);
 }
 
+function createMemberAccount_(data) {
+  const serviceRoleKey = PropertiesService.getScriptProperties().getProperty('SUPABASE_SERVICE_ROLE_KEY');
+  if (!serviceRoleKey) throw new Error('Script PropertiesにSUPABASE_SERVICE_ROLE_KEYが設定されていません。');
+
+  const username = generateUsername_();
+  const password = generatePassword_();
+  const authEmail = `${username.toLowerCase()}@ai-life.local`;
+  const response = UrlFetchApp.fetch(`${CONFIG.supabaseUrl}/auth/v1/admin/users`, {
+    method: 'post',
+    contentType: 'application/json',
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+    },
+    payload: JSON.stringify({
+      email: authEmail,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        username,
+        customer_email: data.customerEmail,
+        customer_name: data.name,
+      },
+    }),
+    muteHttpExceptions: true,
+  });
+  const status = response.getResponseCode();
+  const body = response.getContentText();
+  if (status < 200 || status >= 300) {
+    throw new Error(`会員アカウント作成に失敗しました。status=${status} body=${body}`);
+  }
+  const user = JSON.parse(body);
+  return { username, password, userId: user.id };
+}
+
+function deleteMemberAccount_(userId) {
+  const serviceRoleKey = PropertiesService.getScriptProperties().getProperty('SUPABASE_SERVICE_ROLE_KEY');
+  if (!serviceRoleKey) throw new Error('Script PropertiesにSUPABASE_SERVICE_ROLE_KEYが設定されていません。');
+  const response = UrlFetchApp.fetch(`${CONFIG.supabaseUrl}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+    method: 'delete',
+    headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` },
+    muteHttpExceptions: true,
+  });
+  const status = response.getResponseCode();
+  if (status < 200 || status >= 300) throw new Error(`会員アカウント停止に失敗しました。status=${status}`);
+}
+
+function generateUsername_() {
+  return `AIL${Utilities.getUuid().replace(/-/g, '').slice(0, 9).toUpperCase()}`;
+}
+
+function generatePassword_() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  let value = '';
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, `${Utilities.getUuid()}${Date.now()}`);
+  for (let i = 0; i < 14; i += 1) value += chars.charAt((bytes[i] + 256) % chars.length);
+  return value;
+}
+
 function buildMemberWelcomeMail_(data) {
   return `${data.name} 様
 
 この度は、AI LIFE ACADEMYへお申し込みいただきありがとうございます。
-決済が確認できましたので、会員コンテンツの閲覧権限を付与しました。
+決済が確認できましたので、専用のログイン情報を発行しました。
 
 ━━━━━━━━━━━━━━━━━━
-会員コンテンツ
+会員サイト
 ━━━━━━━━━━━━━━━━━━
 
 以下のURLからアクセスしてください。
-${data.memberFolderUrl}
+URL: ${data.memberSiteUrl}
+ユーザー名: ${data.username}
+パスワード: ${data.password}
 
 まずは「00_本コンテンツの使い方」から読み進めてください。
 その後、以下の順番で学習するとスムーズです。
@@ -244,8 +316,8 @@ ${data.memberFolderUrl}
 6. 06_テンプレート配布
 7. 07_Zoomアーカイブ
 
-閲覧には、決済時に登録したGoogleアカウントでのログインが必要です。
-アクセスできない場合は、このメールにそのまま返信してください。
+ユーザー名とパスワードはお客様専用です。第三者へ共有しないでください。
+ログインできない場合は、このメールにそのまま返信してください。
 
 あいらいふ運営事務局`;
 }
@@ -265,6 +337,9 @@ function getOrCreateSheet_() {
 }
 
 function getOrCreateSpreadsheet_() {
+  if (CONFIG.purchaserSpreadsheetId) {
+    return SpreadsheetApp.openById(CONFIG.purchaserSpreadsheetId);
+  }
   const properties = PropertiesService.getScriptProperties();
   const spreadsheetId = properties.getProperty('PURCHASER_SPREADSHEET_ID');
 
@@ -297,7 +372,11 @@ function logRow_(data) {
     data.chargeId || '',
     data.amount || '',
 	    data.currency || '',
-	    data.driveStatus || '',
+    data.memberSiteUrl || '',
+    data.username || '',
+    data.password || '',
+    data.supabaseUserId || '',
+    data.accountStatus || '',
 	    data.mailStatus || '',
 	    data.purchaserStatus || '',
 	    data.memo || '',
@@ -305,6 +384,12 @@ function logRow_(data) {
 }
 
 function ensureHeaders_(sheet) {
+  const existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  if (existingHeaders.includes('Drive権限') && !existingHeaders.includes('簡易サイトURL')) {
+    sheet.insertColumnsAfter(11, 5);
+    sheet.getRange(1, 12, 1, 5).setValues([HEADERS.slice(11, 16)]);
+    sheet.deleteColumn(17);
+  }
   const current = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), HEADERS.length)).getValues()[0];
   HEADERS.forEach((header) => {
     if (!current.includes(header)) {
@@ -330,7 +415,7 @@ function markPurchaserRefunded_(sheet, purchaser, refundData) {
     eventType: HEADERS.indexOf('Stripeイベント種別') + 1,
     chargeId: HEADERS.indexOf('Charge ID') + 1,
     paymentIntentId: HEADERS.indexOf('Payment Intent ID') + 1,
-    driveStatus: HEADERS.indexOf('Drive権限') + 1,
+    accountStatus: HEADERS.indexOf('アカウント状態') + 1,
     mailStatus: HEADERS.indexOf('メール送信') + 1,
     purchaserStatus: HEADERS.indexOf('購入者ステータス') + 1,
     memo: HEADERS.indexOf('メモ') + 1,
@@ -340,7 +425,7 @@ function markPurchaserRefunded_(sheet, purchaser, refundData) {
   sheet.getRange(rowNumber, indexes.eventType).setValue(refundData.eventType);
   if (refundData.chargeId) sheet.getRange(rowNumber, indexes.chargeId).setValue(refundData.chargeId);
   if (refundData.paymentIntentId) sheet.getRange(rowNumber, indexes.paymentIntentId).setValue(refundData.paymentIntentId);
-  sheet.getRange(rowNumber, indexes.driveStatus).setValue(refundData.driveStatus || '削除済み');
+  sheet.getRange(rowNumber, indexes.accountStatus).setValue(refundData.accountStatus || '停止済み');
   sheet.getRange(rowNumber, indexes.mailStatus).setValue('運営へ通知済み');
   sheet.getRange(rowNumber, indexes.purchaserStatus).setValue('返金済み');
   sheet.getRange(rowNumber, indexes.memo).setValue(
@@ -359,6 +444,8 @@ function findPurchaserForRefund_(sheet, data) {
     email: HEADERS.indexOf('メールアドレス'),
     paymentIntentId: HEADERS.indexOf('Payment Intent ID'),
     chargeId: HEADERS.indexOf('Charge ID'),
+    username: HEADERS.indexOf('ユーザー名'),
+    supabaseUserId: HEADERS.indexOf('Supabase User ID'),
   };
 
   const rowIndex = values.findIndex((item) => {
@@ -378,6 +465,8 @@ function findPurchaserForRefund_(sheet, data) {
     status: row[indexes.status],
     name: row[indexes.name],
     email: normalizeEmail_(row[indexes.email]),
+    username: row[indexes.username],
+    supabaseUserId: row[indexes.supabaseUserId],
     rowNumber: rowIndex + 2,
   };
 }
