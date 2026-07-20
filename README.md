@@ -70,6 +70,8 @@ GitHub Pagesの無料URLを使う場合、維持費は0円です。
 
 設定手順は `automation/stripe-member-access-README.md` を確認してください。
 
+Apps ScriptでStripe Webhookを受ける場合は、`STRIPE_SECRET_KEY` でStripeイベントを再確認し、必要に応じて `STRIPE_WEBHOOK_TOKEN` を設定してWebhook URLへ確認用トークンを付けます。
+
 Supabaseの個別ログイン自動発行キーが未設定の場合は、Apps ScriptのScript Propertiesに以下を設定すると、共通ログインを案内できます。
 
 ```text
