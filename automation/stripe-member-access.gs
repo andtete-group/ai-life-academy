@@ -40,6 +40,7 @@ const ROW_COLORS = {
 function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents);
+    assertWebhookToken_(e);
     const event = fetchStripeEvent_(payload.id);
 
     if (event.type === 'checkout.session.completed') {
@@ -58,6 +59,16 @@ function doPost(e) {
       memo: error.message,
     });
     return json_({ ok: false, error: error.message });
+  }
+}
+
+function assertWebhookToken_(e) {
+  const expectedToken = PropertiesService.getScriptProperties().getProperty('STRIPE_WEBHOOK_TOKEN');
+  if (!expectedToken) return;
+
+  const receivedToken = getParam_(e, 'token');
+  if (!receivedToken || receivedToken !== expectedToken) {
+    throw new Error('Stripe Webhookトークンが一致しません。');
   }
 }
 
@@ -491,6 +502,10 @@ function findPurchaserForRefund_(sheet, data) {
 
 function normalizeEmail_(email) {
   return String(email || '').trim().toLowerCase();
+}
+
+function getParam_(e, key) {
+  return String(e && e.parameter && e.parameter[key] || '').trim();
 }
 
 function json_(data) {
