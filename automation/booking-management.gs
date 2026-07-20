@@ -2,6 +2,7 @@ const BOOKING_CONFIG = {
   adminEmail: 'rakuichi644@gmail.com',
   senderName: 'あいらいふ運営事務局',
   spreadsheetName: 'AI LIFE ACADEMY_予約管理',
+  bookingSpreadsheetId: '1eVvwxmWepytwsGVlOFRJC37qkcIRDGzke7cPKKryGTU',
   slotsSheetName: '予約枠',
   reservationsSheetName: '予約者管理',
   zoomUrl: 'https://us05web.zoom.us/j/87362640884?pwd=K1hsImx0aSZtk5du0V5NtHF1UwCAXs.1',
@@ -120,9 +121,11 @@ function reserveSlot_(e) {
   if (!email) throw new Error('メールアドレスがありません。');
 
   const slotsSheet = getSheet_(BOOKING_CONFIG.slotsSheetName, SLOT_HEADERS);
+  closeExpiredSlots_(slotsSheet);
   const slot = findSlot_(slotsSheet, slotId, slotLabel);
 
   if (slot.rowNumber) {
+    if (isExpiredSlotRow_(slot.row)) throw new Error('この日程は受付終了です。');
     const remaining = Number(slot.row[SLOT_HEADERS.indexOf('残席')] || 0);
     if (remaining <= 0) throw new Error('この日程は満員です。');
     slotsSheet.getRange(slot.rowNumber, SLOT_HEADERS.indexOf('残席') + 1).setValue(remaining - 1);
@@ -264,6 +267,7 @@ function updateReservationStatus_(e) {
 function getPublicSlotGroups_(includePrivate) {
   const sheet = getSheet_(BOOKING_CONFIG.slotsSheetName, SLOT_HEADERS);
   if (sheet.getLastRow() <= 1) seedSlots_(sheet);
+  closeExpiredSlots_(sheet);
 
   const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, SLOT_HEADERS.length).getValues();
   const groups = {};
@@ -271,6 +275,7 @@ function getPublicSlotGroups_(includePrivate) {
   values.forEach((row) => {
     const isPublic = row[SLOT_HEADERS.indexOf('公開')] !== 'FALSE';
     if (!includePrivate && !isPublic) return;
+    if (!includePrivate && isExpiredSlotRow_(row)) return;
 
     const weekLabel = row[SLOT_HEADERS.indexOf('週ラベル')] || '予約可能日程';
     if (!groups[weekLabel]) groups[weekLabel] = { label: weekLabel, slots: [] };
@@ -290,6 +295,55 @@ function getPublicSlotGroups_(includePrivate) {
   });
 
   return Object.keys(groups).map((key) => groups[key]);
+}
+
+function closeExpiredSlots_(sheet) {
+  if (sheet.getLastRow() <= 1) return;
+
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, SLOT_HEADERS.length).getValues();
+  const remainingColumn = SLOT_HEADERS.indexOf('残席') + 1;
+  const publicColumn = SLOT_HEADERS.indexOf('公開') + 1;
+  const memoColumn = SLOT_HEADERS.indexOf('メモ') + 1;
+  const updatedColumn = SLOT_HEADERS.indexOf('更新日時') + 1;
+  const now = new Date();
+
+  values.forEach((row, index) => {
+    if (!isExpiredSlotRow_(row)) return;
+
+    const rowNumber = index + 2;
+    const isPublic = row[SLOT_HEADERS.indexOf('公開')] !== 'FALSE';
+    const remaining = Number(row[SLOT_HEADERS.indexOf('残席')] || 0);
+    if (!isPublic && remaining <= 0) return;
+
+    const memo = String(row[SLOT_HEADERS.indexOf('メモ')] || 'オンラインZoom説明会');
+    sheet.getRange(rowNumber, remainingColumn).setValue(0);
+    sheet.getRange(rowNumber, publicColumn).setValue('FALSE');
+    if (!memo.includes('自動受付終了')) {
+      sheet.getRange(rowNumber, memoColumn).setValue(`${memo} / 自動受付終了`);
+    }
+    sheet.getRange(rowNumber, updatedColumn).setValue(now);
+  });
+}
+
+function isExpiredSlotRow_(row) {
+  const dateText = row[SLOT_HEADERS.indexOf('日付')];
+  const timeText = row[SLOT_HEADERS.indexOf('時間')];
+  const start = parseSlotStart_(dateText, timeText);
+  return start ? start.getTime() <= Date.now() : false;
+}
+
+function parseSlotStart_(dateText, timeText) {
+  const dateMatch = String(dateText || '').match(/(?:(\d{4})年)?(\d{1,2})月(\d{1,2})日/);
+  if (!dateMatch) return null;
+
+  const now = new Date();
+  const year = Number(dateMatch[1] || now.getFullYear());
+  const month = Number(dateMatch[2]);
+  const day = Number(dateMatch[3]);
+  const timeMatch = String(timeText || '').match(/(\d{1,2}):(\d{2})/);
+  const hour = timeMatch ? Number(timeMatch[1]) : 0;
+  const minute = timeMatch ? Number(timeMatch[2]) : 0;
+  return new Date(year, month - 1, day, hour, minute, 0, 0);
 }
 
 function seedSlots_(sheet) {
@@ -378,6 +432,8 @@ function getSheet_(sheetName, headers) {
 }
 
 function getSpreadsheet_() {
+  if (BOOKING_CONFIG.bookingSpreadsheetId) return SpreadsheetApp.openById(BOOKING_CONFIG.bookingSpreadsheetId);
+
   const properties = PropertiesService.getScriptProperties();
   const spreadsheetId = properties.getProperty('BOOKING_SPREADSHEET_ID');
   if (spreadsheetId) return SpreadsheetApp.openById(spreadsheetId);
