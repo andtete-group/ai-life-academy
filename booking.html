@@ -32,10 +32,13 @@
 
     <main class="booking-page">
       <section class="booking-hero booking-lp-hero">
-        <div class="section-inner booking-hero-grid">
+        <div class="section-inner booking-hero-grid booking-hero-top">
           <div>
             <p class="eyebrow">AI LIFE Free Seminar</p>
-            <h1>あいらいふが無料開催</h1>
+            <h1 class="booking-title-stack">
+              <span>あいらいふが</span>
+              <span>無料開催</span>
+            </h1>
             <p class="lead">
               ChatGPTとCodexを使って、仕事、SNS、資料作成、アプリ開発、自動化までどう広げるか。
               30日間でAI成果物の完成を目指す進め方を、オンライン説明会で分かりやすくお伝えします。
@@ -53,19 +56,85 @@
               </a>
             </div>
           </div>
-          <div class="briefing-visual" aria-label="無料説明会の概要">
-            <div class="briefing-orbit" aria-hidden="true"></div>
-            <div class="briefing-score">
-              <span>5 Days</span>
-              <strong>ChatGPT × Codex</strong>
-              <small>仕事と収益化に使えるAI実践力</small>
-            </div>
-            <div class="briefing-mini-cards">
-              <span>AI活用ロードマップ</span>
-              <span>AI秘書構築の考え方</span>
-              <span>Codex自動化の入口</span>
+        </div>
+      </section>
+
+      <section class="section booking-calendar-section booking-calendar-priority" aria-labelledby="booking-title">
+        <div class="section-inner booking-layout">
+          <div class="section-heading">
+            <p class="eyebrow">Schedule</p>
+            <h2 id="booking-title">1ヶ月分の予約カレンダー</h2>
+            <p>
+              カレンダーから空き日程をタップすると、希望日程が確定します。
+              氏名、メールアドレス、電話番号、AI経験、特に知りたいことを入力してお申し込みください。
+            </p>
+            <div class="booking-note">
+              <strong>オンライン・顔出し不要</strong>
+              <span>予約完了後、入力メール宛にZoomリンクをお送りします。</span>
             </div>
           </div>
+
+          <form
+            class="booking-form"
+            id="bookingForm"
+            action=""
+            method="POST"
+            data-endpoint="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfOn2rwxm9M9sjA_HSz4NKfN_N0Ghsqf8aCifoM1Gl750YGjw/formResponse"
+            data-entry-slot="entry.1904670148"
+            data-entry-name="entry.725353133"
+            data-entry-email="entry.354237653"
+            data-entry-phone="entry.436057300"
+            data-entry-experience="entry.1356205828"
+            data-entry-interest="entry.2114920772"
+            data-entry-zoom="entry.570275099"
+            data-entry-source="entry.1115295897"
+            data-booking-api=""
+          >
+            <fieldset>
+              <legend>希望日程</legend>
+              <div class="booking-slots" id="bookingSlots" aria-live="polite">
+                <p class="slot-loading">カレンダーを読み込み中です...</p>
+              </div>
+            </fieldset>
+
+            <div class="form-grid">
+              <label>
+                <span>氏名</span>
+                <input type="text" name="name" autocomplete="name" required />
+              </label>
+              <label>
+                <span>メールアドレス</span>
+                <input type="email" name="email" autocomplete="email" required />
+              </label>
+              <label>
+                <span>電話番号</span>
+                <input type="tel" name="phone" autocomplete="tel" required />
+              </label>
+              <label>
+                <span>AI経験</span>
+                <select name="experience" required>
+                  <option value="">選択してください</option>
+                  <option>ほぼ未経験</option>
+                  <option>ChatGPTを少し使ったことがある</option>
+                  <option>仕事でAIを使っている</option>
+                  <option>Codexや自動化にも興味がある</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              <span>特に知りたいこと</span>
+              <textarea name="interest" rows="4" placeholder="例: 仕事の時短、SNS自動化、CodexでLP制作、副業への活用など"></textarea>
+            </label>
+
+            <label class="consent-check">
+              <input type="checkbox" name="consent" required />
+              <span><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>に同意します</span>
+            </label>
+
+            <button class="button primary large" type="submit">予約内容を送信する</button>
+            <p class="form-help">送信後、予約内容を確認してZoomリンクをメールでお送りします。</p>
+          </form>
         </div>
       </section>
 
@@ -181,7 +250,7 @@
           <div class="section-heading center">
             <p class="eyebrow">Check Before Seminar</p>
             <h2 id="booking-check-title">説明会で確認できること</h2>
-            <p>講座申込前に、費用・サポート範囲・返金条件をその場で確認できます。</p>
+            <p>講座申込前に、内容・サポート範囲・参加後の進め方をその場で確認できます。</p>
           </div>
           <div class="requirements-grid">
             <article>
@@ -193,8 +262,8 @@
               <p>金銭的な返金保証ではなく、条件を満たした方に限るサポート延長制度です。</p>
             </article>
             <article>
-              <h3>必要環境と外部費用</h3>
-              <p>パソコン推奨、安定したネット環境、ChatGPT Plusや追加クレジットなど別途費用の可能性を確認できます。</p>
+              <h3>必要環境</h3>
+              <p>パソコン推奨、安定したネット環境など、参加前に準備しておくと安心な環境を確認できます。</p>
             </article>
             <article>
               <h3>あなたの完成目標</h3>
@@ -204,84 +273,6 @@
         </div>
       </section>
 
-      <section class="section booking-calendar-section" aria-labelledby="booking-title">
-        <div class="section-inner booking-layout">
-          <div class="section-heading">
-            <p class="eyebrow">Schedule</p>
-            <h2 id="booking-title">1ヶ月分の予約カレンダー</h2>
-            <p>
-              カレンダーから空き日程をタップすると、希望日程が確定します。
-              氏名、メールアドレス、電話番号、AI経験、特に知りたいことを入力してお申し込みください。
-            </p>
-            <div class="booking-note">
-              <strong>オンライン・顔出し不要</strong>
-              <span>予約完了後、入力メール宛にZoomリンクをお送りします。</span>
-            </div>
-          </div>
-
-          <form
-            class="booking-form"
-            id="bookingForm"
-            action=""
-            method="POST"
-            data-endpoint="https://docs.google.com/forms/u/0/d/e/1FAIpQLSfOn2rwxm9M9sjA_HSz4NKfN_N0Ghsqf8aCifoM1Gl750YGjw/formResponse"
-            data-entry-slot="entry.1904670148"
-            data-entry-name="entry.725353133"
-            data-entry-email="entry.354237653"
-            data-entry-phone="entry.436057300"
-            data-entry-experience="entry.1356205828"
-            data-entry-interest="entry.2114920772"
-            data-entry-zoom="entry.570275099"
-            data-entry-source="entry.1115295897"
-            data-booking-api=""
-          >
-            <fieldset>
-              <legend>希望日程</legend>
-              <div class="booking-slots" id="bookingSlots" aria-live="polite">
-                <p class="slot-loading">カレンダーを読み込み中です...</p>
-              </div>
-            </fieldset>
-
-            <div class="form-grid">
-              <label>
-                <span>氏名</span>
-                <input type="text" name="name" autocomplete="name" required />
-              </label>
-              <label>
-                <span>メールアドレス</span>
-                <input type="email" name="email" autocomplete="email" required />
-              </label>
-              <label>
-                <span>電話番号</span>
-                <input type="tel" name="phone" autocomplete="tel" required />
-              </label>
-              <label>
-                <span>AI経験</span>
-                <select name="experience" required>
-                  <option value="">選択してください</option>
-                  <option>ほぼ未経験</option>
-                  <option>ChatGPTを少し使ったことがある</option>
-                  <option>仕事でAIを使っている</option>
-                  <option>Codexや自動化にも興味がある</option>
-                </select>
-              </label>
-            </div>
-
-            <label>
-              <span>特に知りたいこと</span>
-              <textarea name="interest" rows="4" placeholder="例: 仕事の時短、SNS自動化、CodexでLP制作、副業への活用など"></textarea>
-            </label>
-
-            <label class="consent-check">
-              <input type="checkbox" name="consent" required />
-              <span><a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>に同意します</span>
-            </label>
-
-            <button class="button primary large" type="submit">予約内容を送信する</button>
-            <p class="form-help">送信後、予約内容を確認してZoomリンクをメールでお送りします。</p>
-          </form>
-        </div>
-      </section>
     </main>
 
     <footer class="site-footer">
