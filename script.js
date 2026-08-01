@@ -19,12 +19,12 @@ if (menuButton && nav) {
 
 const revealTargets = [
   ...document.querySelectorAll(
-    ".section-heading, .reason-grid, .split-layout, .guarantee-box, .comparison-table, .bonus-layout, .faq-layout, .company-layout, .briefing-panel, .legal-list, .policy-stack section, .curriculum-summary, .roadmap-panel, .deliverables-panel, .briefing-visual, .briefing-bonus-row, .briefing-program, .booking-calendar"
+    ".section-heading, .reason-grid, .split-layout, .guarantee-box, .comparison-table, .bonus-layout, .faq-layout, .company-layout, .briefing-panel, .legal-list, .policy-stack section, .curriculum-summary, .roadmap-panel, .deliverables-panel, .briefing-visual, .briefing-bonus-row, .briefing-program, .booking-calendar, .plan-grid"
   ),
 ];
 
 const staggerTargets = [
-  ...document.querySelectorAll(".worry-grid, .level-stack, .chapter-grid, .bonus-list, .flow-diagram, .calendar-grid"),
+  ...document.querySelectorAll(".worry-grid, .level-stack, .chapter-grid, .bonus-list, .flow-diagram, .calendar-grid, .plan-grid"),
 ];
 
 revealTargets.forEach((element) => element.classList.add("reveal"));
@@ -47,6 +47,485 @@ if ("IntersectionObserver" in window) {
 } else {
   [...revealTargets, ...staggerTargets].forEach((element) => element.classList.add("is-visible"));
 }
+
+const motionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+const reduceMotion = Boolean(motionQuery?.matches);
+const saveData = Boolean(navigator.connection?.saveData);
+
+function initHeroParticles() {
+  const canvas = document.querySelector(".hero-particles");
+  const hero = document.querySelector(".hero");
+  if (!(canvas instanceof HTMLCanvasElement) || !hero || reduceMotion || saveData) return;
+
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) return;
+
+  const isCoarse = window.matchMedia?.("(pointer: coarse)")?.matches;
+  const hardware = navigator.hardwareConcurrency || 4;
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, isCoarse ? 1.35 : 1.6);
+  const pointer = { x: 0, y: 0, tx: 0, ty: 0, active: false, force: 0 };
+  const ripples = [];
+  let particles = [];
+  let width = 0;
+  let height = 0;
+  let running = false;
+  let visible = true;
+  let frame = 0;
+  let lastTime = performance.now();
+  let quality = 1;
+
+  const aiShape = [
+    [0.20, 0.64], [0.24, 0.52], [0.28, 0.40], [0.32, 0.28], [0.36, 0.40], [0.40, 0.52], [0.44, 0.64],
+    [0.27, 0.49], [0.37, 0.49],
+    [0.56, 0.28], [0.56, 0.40], [0.56, 0.52], [0.56, 0.64],
+    [0.50, 0.28], [0.62, 0.28], [0.50, 0.64], [0.62, 0.64],
+  ];
+
+  function getParticleCount() {
+    const area = Math.max(1, width * height);
+    const base = Math.round(area / (isCoarse ? 15000 : 11800));
+    const cap = isCoarse ? (hardware <= 4 ? 54 : 72) : (hardware <= 4 ? 82 : 122);
+    return Math.max(isCoarse ? 34 : 56, Math.min(cap, base));
+  }
+
+  function resize() {
+    const rect = hero.getBoundingClientRect();
+    width = Math.max(1, Math.round(rect.width));
+    height = Math.max(1, Math.round(rect.height));
+    canvas.width = Math.round(width * pixelRatio);
+    canvas.height = Math.round(height * pixelRatio);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+    const count = getParticleCount();
+    particles = Array.from({ length: count }, (_, index) => {
+      const shape = aiShape[index % aiShape.length];
+      const targetX = width * shape[0] + (Math.random() - 0.5) * 34;
+      const targetY = height * shape[1] + (Math.random() - 0.5) * 28;
+      return {
+        x: targetX,
+        y: targetY,
+        homeX: width * (0.12 + Math.random() * 0.76),
+        homeY: height * (0.14 + Math.random() * 0.72),
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.18,
+        radius: 0.75 + Math.random() * 1.25,
+        hue: Math.random() > 0.62 ? "167, 224, 255" : Math.random() > 0.45 ? "160, 146, 255" : "255, 255, 255",
+        shapeHold: 1,
+      };
+    });
+  }
+
+  function draw(now) {
+    if (!running) return;
+    const delta = Math.min(32, now - lastTime);
+    lastTime = now;
+    frame += 1;
+
+    if (frame % 90 === 0 && delta > 28) quality = Math.max(0.58, quality - 0.12);
+
+    context.clearRect(0, 0, width, height);
+    pointer.x += (pointer.tx - pointer.x) * 0.08;
+    pointer.y += (pointer.ty - pointer.y) * 0.08;
+    pointer.force += ((pointer.active ? 1 : 0) - pointer.force) * 0.06;
+
+    particles.forEach((particle) => {
+      particle.shapeHold *= 0.988;
+      const driftX = Math.sin((now * 0.00018) + particle.homeY * 0.02) * 18;
+      const driftY = Math.cos((now * 0.00016) + particle.homeX * 0.02) * 14;
+      const targetX = particle.homeX + driftX;
+      const targetY = particle.homeY + driftY;
+      const formation = Math.max(0, particle.shapeHold - 0.18);
+
+      particle.vx += ((targetX - particle.x) * 0.0009 + (Math.random() - 0.5) * 0.008) * (1 - formation);
+      particle.vy += ((targetY - particle.y) * 0.0009 + (Math.random() - 0.5) * 0.008) * (1 - formation);
+
+      if (pointer.force > 0.02) {
+        const dx = particle.x - pointer.x;
+        const dy = particle.y - pointer.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        const range = isCoarse ? 120 : 150;
+        if (distance < range) {
+          const push = (1 - distance / range) * pointer.force * 0.055;
+          particle.vx += (dx / distance) * push;
+          particle.vy += (dy / distance) * push;
+        }
+      }
+
+      particle.vx *= 0.94;
+      particle.vy *= 0.94;
+      particle.x += particle.vx * delta;
+      particle.y += particle.vy * delta;
+
+      if (particle.x < -20) particle.x = width + 20;
+      if (particle.x > width + 20) particle.x = -20;
+      if (particle.y < -20) particle.y = height + 20;
+      if (particle.y > height + 20) particle.y = -20;
+    });
+
+    const maxLineDistance = (isCoarse ? 92 : 112) * quality;
+    for (let i = 0; i < particles.length; i += 1) {
+      const a = particles[i];
+      for (let j = i + 1; j < particles.length; j += 1) {
+        const b = particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance < maxLineDistance) {
+          const alpha = (1 - distance / maxLineDistance) * 0.12 * quality;
+          context.strokeStyle = `rgba(124, 232, 255, ${alpha})`;
+          context.lineWidth = 0.6;
+          context.beginPath();
+          context.moveTo(a.x, a.y);
+          context.lineTo(b.x, b.y);
+          context.stroke();
+        }
+      }
+    }
+
+    ripples.forEach((ripple, index) => {
+      ripple.radius += delta * 0.09;
+      ripple.alpha *= 0.94;
+      context.strokeStyle = `rgba(124, 232, 255, ${ripple.alpha})`;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+      context.stroke();
+      if (ripple.alpha < 0.012) ripples.splice(index, 1);
+    });
+
+    particles.forEach((particle) => {
+      context.fillStyle = `rgba(${particle.hue}, ${0.34 * quality})`;
+      context.beginPath();
+      context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+      context.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  function start() {
+    if (running || !visible || document.hidden) return;
+    running = true;
+    lastTime = performance.now();
+    requestAnimationFrame(draw);
+  }
+
+  function stop() {
+    running = false;
+  }
+
+  function updatePointer(event) {
+    const rect = canvas.getBoundingClientRect();
+    pointer.tx = event.clientX - rect.left;
+    pointer.ty = event.clientY - rect.top;
+    pointer.active = true;
+  }
+
+  function releasePointer() {
+    pointer.active = false;
+  }
+
+  function addRipple(event) {
+    const rect = canvas.getBoundingClientRect();
+    ripples.push({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      radius: 8,
+      alpha: 0.32,
+    });
+  }
+
+  hero.addEventListener("pointermove", updatePointer, { passive: true });
+  hero.addEventListener("pointerleave", releasePointer, { passive: true });
+  hero.addEventListener("pointercancel", releasePointer, { passive: true });
+  hero.addEventListener("pointerup", releasePointer, { passive: true });
+  hero.addEventListener("pointerdown", (event) => {
+    updatePointer(event);
+    addRipple(event);
+  }, { passive: true });
+
+  const visibilityObserver = "IntersectionObserver" in window
+    ? new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) start();
+        else stop();
+      }, { threshold: 0.08 })
+    : null;
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else start();
+  });
+
+  window.addEventListener("resize", () => {
+    resize();
+    start();
+  }, { passive: true });
+
+  resize();
+  visibilityObserver?.observe(hero);
+  if (!visibilityObserver) start();
+}
+
+function initWorryTilt() {
+  if (reduceMotion) return;
+  const cards = [...document.querySelectorAll(".worry-card")];
+  if (!cards.length) return;
+
+  cards.forEach((card) => {
+    if (!(card instanceof HTMLElement)) return;
+
+    const reset = () => {
+      card.classList.remove("is-tilting");
+      card.style.transform = "";
+      card.style.setProperty("--tilt-glow", "0");
+    };
+
+    card.addEventListener("pointermove", (event) => {
+      if (event.pointerType === "touch" && Math.abs(event.movementY || 0) > Math.abs(event.movementX || 0)) return;
+      const rect = card.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      const rotateY = (x - 0.5) * 5.2;
+      const rotateX = (0.5 - y) * 4.6;
+      card.classList.add("is-tilting");
+      card.style.transform = `translateY(-3px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+      card.style.setProperty("--tilt-x", `${Math.round(x * 100)}%`);
+      card.style.setProperty("--tilt-y", `${Math.round(y * 100)}%`);
+      card.style.setProperty("--tilt-glow", "1");
+    }, { passive: true });
+
+    card.addEventListener("pointerleave", reset, { passive: true });
+    card.addEventListener("pointercancel", reset, { passive: true });
+    card.addEventListener("pointerup", reset, { passive: true });
+  });
+}
+
+function initPlanInteraction() {
+  const cards = [...document.querySelectorAll("[data-plan-card]")];
+  const canvas = document.querySelector(".plan-particles");
+  const section = document.querySelector(".plan-section");
+
+  cards.forEach((card) => {
+    if (!(card instanceof HTMLElement)) return;
+
+    const reset = () => {
+      card.classList.remove("is-active");
+      card.style.transform = "";
+      card.style.setProperty("--plan-glow", "0");
+    };
+
+    card.addEventListener("pointermove", (event) => {
+      if (reduceMotion) return;
+      const rect = card.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      const rotateY = (x - 0.5) * 3.2;
+      const rotateX = (0.5 - y) * 2.8;
+      card.classList.add("is-active");
+      card.style.transform = `translateY(-4px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
+      card.style.setProperty("--plan-x", `${Math.round(x * 100)}%`);
+      card.style.setProperty("--plan-y", `${Math.round(y * 100)}%`);
+      card.style.setProperty("--plan-glow", "1");
+    }, { passive: true });
+
+    card.addEventListener("pointerleave", reset, { passive: true });
+    card.addEventListener("pointercancel", reset, { passive: true });
+    card.addEventListener("pointerup", reset, { passive: true });
+  });
+
+  if (!(canvas instanceof HTMLCanvasElement) || !section || reduceMotion || saveData) return;
+
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) return;
+
+  const coarse = window.matchMedia?.("(pointer: coarse)")?.matches;
+  const dpr = Math.min(window.devicePixelRatio || 1, coarse ? 1.2 : 1.45);
+  const dots = [];
+  const pointer = { x: 0, y: 0, tx: -999, ty: -999, active: false };
+  let width = 0;
+  let height = 0;
+  let running = false;
+  let visible = true;
+
+  function resize() {
+    const rect = section.getBoundingClientRect();
+    width = Math.max(1, Math.round(rect.width));
+    height = Math.max(1, Math.round(rect.height));
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.min(coarse ? 34 : 52, Math.max(24, Math.round((width * height) / 24000)));
+    dots.length = 0;
+    for (let i = 0; i < count; i += 1) {
+      dots.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: (Math.random() - 0.5) * 0.18,
+        r: 0.8 + Math.random() * 1.6,
+      });
+    }
+  }
+
+  function draw() {
+    if (!running) return;
+    context.clearRect(0, 0, width, height);
+    pointer.x += (pointer.tx - pointer.x) * 0.06;
+    pointer.y += (pointer.ty - pointer.y) * 0.06;
+
+    dots.forEach((dot, index) => {
+      dot.x += dot.vx;
+      dot.y += dot.vy;
+      if (dot.x < -10) dot.x = width + 10;
+      if (dot.x > width + 10) dot.x = -10;
+      if (dot.y < -10) dot.y = height + 10;
+      if (dot.y > height + 10) dot.y = -10;
+
+      if (pointer.active) {
+        const dx = dot.x - pointer.x;
+        const dy = dot.y - pointer.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        if (distance < 150) {
+          dot.x += (dx / distance) * 0.42;
+          dot.y += (dy / distance) * 0.42;
+        }
+      }
+
+      context.fillStyle = index % 3 === 0 ? "rgba(112, 88, 255, 0.18)" : "rgba(22, 135, 255, 0.16)";
+      context.beginPath();
+      context.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+      context.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  function start() {
+    if (running || !visible || document.hidden) return;
+    running = true;
+    requestAnimationFrame(draw);
+  }
+
+  function stop() {
+    running = false;
+  }
+
+  section.addEventListener("pointermove", (event) => {
+    const rect = section.getBoundingClientRect();
+    pointer.tx = event.clientX - rect.left;
+    pointer.ty = event.clientY - rect.top;
+    pointer.active = true;
+  }, { passive: true });
+  section.addEventListener("pointerleave", () => {
+    pointer.active = false;
+  }, { passive: true });
+
+  const observer = "IntersectionObserver" in window
+    ? new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) start();
+        else stop();
+      }, { threshold: 0.05 })
+    : null;
+
+  window.addEventListener("resize", () => {
+    resize();
+    start();
+  }, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else start();
+  });
+
+  resize();
+  observer?.observe(section);
+  if (!observer) start();
+}
+
+function initFinalCtaInteraction() {
+  const panel = document.querySelector(".briefing-panel");
+  const button = panel?.querySelector(".button.primary");
+  if (!(panel instanceof HTMLElement) || !(button instanceof HTMLElement)) return;
+
+  const sparkCount = 12;
+  for (let i = 0; i < sparkCount; i += 1) {
+    const spark = document.createElement("span");
+    spark.className = "cta-spark";
+    const x = 14 + Math.random() * 78;
+    const y = 18 + Math.random() * 66;
+    spark.style.setProperty("--spark-x", `${x}%`);
+    spark.style.setProperty("--spark-y", `${y}%`);
+    spark.style.setProperty("--spark-pull-x", `${(50 - x) * 0.8}px`);
+    spark.style.setProperty("--spark-pull-y", `${(50 - y) * 0.5}px`);
+    panel.append(spark);
+  }
+
+  if (reduceMotion) return;
+
+  let ctaFrame = 0;
+  let targetX = 82;
+  let targetY = 42;
+  let currentX = targetX;
+  let currentY = targetY;
+  let active = false;
+
+  function animateLight() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    panel.style.setProperty("--cta-x", `${currentX.toFixed(2)}%`);
+    panel.style.setProperty("--cta-y", `${currentY.toFixed(2)}%`);
+    if (active) ctaFrame = requestAnimationFrame(animateLight);
+  }
+
+  function moveLight(event) {
+    const rect = panel.getBoundingClientRect();
+    targetX = ((event.clientX - rect.left) / rect.width) * 100;
+    targetY = ((event.clientY - rect.top) / rect.height) * 100;
+    panel.classList.add("is-active");
+    if (!active) {
+      active = true;
+      ctaFrame = requestAnimationFrame(animateLight);
+    }
+  }
+
+  function settleLight() {
+    targetX = 82;
+    targetY = 42;
+    panel.classList.remove("is-active");
+    window.setTimeout(() => {
+      active = false;
+      cancelAnimationFrame(ctaFrame);
+    }, 520);
+  }
+
+  panel.addEventListener("pointermove", moveLight, { passive: true });
+  panel.addEventListener("pointerleave", settleLight, { passive: true });
+  panel.addEventListener("pointercancel", settleLight, { passive: true });
+
+  button.addEventListener("click", (event) => {
+    const rect = button.getBoundingClientRect();
+    const ripple = document.createElement("span");
+    ripple.className = "button-ripple";
+    const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
+    const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    button.append(ripple);
+    panel.classList.add("is-rippling");
+    window.setTimeout(() => ripple.remove(), 700);
+    window.setTimeout(() => panel.classList.remove("is-rippling"), 460);
+  });
+}
+
+initHeroParticles();
+initWorryTilt();
+initPlanInteraction();
+initFinalCtaInteraction();
 
 const bookingForm = document.querySelector("#bookingForm");
 const bookingSlotsContainer = document.querySelector("#bookingSlots");
