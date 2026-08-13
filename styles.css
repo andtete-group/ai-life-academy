@@ -2449,6 +2449,45 @@ h3 {
   text-align: center;
 }
 
+.booking-roadmap-banner {
+  display: flex;
+  gap: 26px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0a153f, #352073);
+  color: #ffffff;
+}
+
+.booking-roadmap-banner span {
+  color: #70edff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.booking-roadmap-banner h3 {
+  margin: 4px 0;
+  color: #ffffff;
+  font-size: 23px;
+}
+
+.booking-roadmap-banner p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+
+.booking-roadmap-banner a {
+  flex: 0 0 auto;
+  padding: 11px 16px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172254;
+  font-weight: 900;
+}
+
 .booking-simple-page .booking-calendar-section {
   padding: clamp(52px, 8vw, 92px) clamp(16px, 4vw, 56px);
   background: #ffffff;
@@ -2659,6 +2698,11 @@ h3 {
   .booking-benefit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 9px;
+  }
+
+  .booking-roadmap-banner {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .booking-benefit-card {

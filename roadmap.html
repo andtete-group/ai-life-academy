@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>あなた専用 AI活用ロードマップ診断 | AI LIFE</title>
+    <meta name="description" content="質問に答えるだけで、日常・仕事・副業に合ったChatGPTとCodexの活用法、30日計画、専用プロンプトが完成します。" />
+    <link rel="stylesheet" href="roadmap.css?v=20260813" />
+  </head>
+  <body>
+    <header class="rm-header">
+      <a href="index.html" class="rm-brand"><img src="assets/ai-life-icon.jpg" alt="" /><span>AI LIFE</span></a>
+      <span class="rm-header-badge">無料AI体験会ツール</span>
+    </header>
+
+    <main>
+      <section class="rm-hero" id="start">
+        <div class="rm-wrap rm-hero-grid">
+          <div>
+            <p class="rm-eyebrow">PERSONAL AI ROADMAP</p>
+            <h1>あなた専用の<br /><em>AI活用ロードマップ</em>を作成</h1>
+            <p class="rm-lead">10個の質問に答えると、日常・仕事・0→1副業に合った「チャッピー」とCodexの使い方が具体的な行動計画とコピペ用プロンプトになります。</p>
+            <div class="rm-hero-points"><span>約3分</span><span>登録不要</span><span>結果を保存可能</span></div>
+            <button class="rm-primary" type="button" data-start>無料で診断を始める <b>→</b></button>
+          </div>
+          <div class="rm-preview" aria-label="診断結果の内容">
+            <span class="rm-preview-label">YOUR RESULT</span>
+            <strong>1つの回答から<br />6つの成果物</strong>
+            <ul><li>日常のAI活用法</li><li>仕事のAI活用法</li><li>おすすめ副業</li><li>30日実行プラン</li><li>専用プロンプト</li><li>最初の一歩</li></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="rm-diagnosis" id="diagnosis" hidden>
+        <div class="rm-wrap rm-form-shell">
+          <div class="rm-progress-head"><div><span id="stepLabel">STEP 1 / 10</span><strong id="stepTitle">あなたについて</strong></div><button type="button" class="rm-text-button" data-reset>最初から</button></div>
+          <div class="rm-progress"><i id="progressBar"></i></div>
+          <form id="roadmapForm">
+            <section class="rm-step is-active" data-step="1">
+              <p class="rm-question">まず、お名前またはニックネームを教えてください</p>
+              <label class="rm-field"><span>結果に表示するお名前</span><input name="nickname" type="text" placeholder="例：ふみ" maxlength="20" required /></label>
+              <p class="rm-question rm-subquestion">現在の状況に一番近いものは？</p>
+              <div class="rm-options rm-options-2">
+                <label><input type="radio" name="status" value="employee" required /><span>会社員・公務員<small>本業を効率化したい</small></span></label>
+                <label><input type="radio" name="status" value="owner" /><span>経営者・個人事業<small>事業を伸ばしたい</small></span></label>
+                <label><input type="radio" name="status" value="homemaker" /><span>主婦・主夫<small>生活と収入を両立したい</small></span></label>
+                <label><input type="radio" name="status" value="student" /><span>学生・求職中<small>スキルと実績を作りたい</small></span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="2">
+              <p class="rm-question">今、一番改善したいことは？</p>
+              <div class="rm-options rm-options-2">
+                <label><input type="radio" name="priority" value="time" required /><span>時間を増やす<small>家事や仕事を時短したい</small></span></label>
+                <label><input type="radio" name="priority" value="work" /><span>仕事の質を上げる<small>文章・資料・企画を改善</small></span></label>
+                <label><input type="radio" name="priority" value="income" /><span>収入を増やす<small>副業の0→1を作りたい</small></span></label>
+                <label><input type="radio" name="priority" value="create" /><span>形にする<small>SNS・サイト・商品を作る</small></span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="3">
+              <p class="rm-question">日常で負担に感じていることは？ <small>複数選択可</small></p>
+              <div class="rm-options rm-checks">
+                <label><input type="checkbox" name="daily" value="housework" /><span>献立・買い物・家事</span></label>
+                <label><input type="checkbox" name="daily" value="schedule" /><span>予定・タスク管理</span></label>
+                <label><input type="checkbox" name="daily" value="family" /><span>家族・子育て・旅行</span></label>
+                <label><input type="checkbox" name="daily" value="learning" /><span>調べもの・学習</span></label>
+                <label><input type="checkbox" name="daily" value="money" /><span>家計・固定費の整理</span></label>
+                <label><input type="checkbox" name="daily" value="writing" /><span>文章や連絡を考える</span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="4">
+              <p class="rm-question">仕事で時間がかかることは？ <small>複数選択可</small></p>
+              <div class="rm-options rm-checks">
+                <label><input type="checkbox" name="work" value="email" /><span>メール・連絡文</span></label>
+                <label><input type="checkbox" name="work" value="document" /><span>資料・議事録・要約</span></label>
+                <label><input type="checkbox" name="work" value="sales" /><span>営業・提案・接客</span></label>
+                <label><input type="checkbox" name="work" value="marketing" /><span>SNS・集客・発信</span></label>
+                <label><input type="checkbox" name="work" value="data" /><span>集計・分析・改善</span></label>
+                <label><input type="checkbox" name="work" value="system" /><span>サイト・予約・自動化</span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="5">
+              <p class="rm-question">人から褒められること・苦にならないことは？ <small>最大3つ</small></p>
+              <div class="rm-options rm-checks" data-limit="3">
+                <label><input type="checkbox" name="strength" value="talk" /><span>話す・聞く</span></label>
+                <label><input type="checkbox" name="strength" value="write" /><span>書く・伝える</span></label>
+                <label><input type="checkbox" name="strength" value="design" /><span>見た目を整える</span></label>
+                <label><input type="checkbox" name="strength" value="organize" /><span>整理・管理する</span></label>
+                <label><input type="checkbox" name="strength" value="research" /><span>調べる・比較する</span></label>
+                <label><input type="checkbox" name="strength" value="support" /><span>人を支える・教える</span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="6">
+              <p class="rm-question">副業でやってみたい形は？ <small>複数選択可</small></p>
+              <div class="rm-options rm-checks">
+                <label><input type="checkbox" name="interest" value="service" /><span>代行・受託<small>早く売上を作りやすい</small></span></label>
+                <label><input type="checkbox" name="interest" value="content" /><span>SNS・動画・発信<small>信用と集客を積み上げる</small></span></label>
+                <label><input type="checkbox" name="interest" value="digital" /><span>教材・テンプレ販売<small>作ったものを繰り返し販売</small></span></label>
+                <label><input type="checkbox" name="interest" value="web" /><span>サイト・ツール制作<small>Codexを強く活かせる</small></span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="7">
+              <p class="rm-question">副業に使える時間は？</p>
+              <div class="rm-options">
+                <label><input type="radio" name="time" value="15" required /><span>1日15〜30分</span></label>
+                <label><input type="radio" name="time" value="60" /><span>1日1時間前後</span></label>
+                <label><input type="radio" name="time" value="120" /><span>1日2時間以上</span></label>
+              </div>
+              <p class="rm-question rm-subquestion">まず目指したい月収は？</p>
+              <div class="rm-options rm-options-2">
+                <label><input type="radio" name="income" value="1" required /><span>1万円<small>最初の実績を作る</small></span></label>
+                <label><input type="radio" name="income" value="3" /><span>3万円<small>小さく継続する</small></span></label>
+                <label><input type="radio" name="income" value="5" /><span>5万円<small>副収入の柱を作る</small></span></label>
+                <label><input type="radio" name="income" value="10" /><span>10万円以上<small>事業として育てる</small></span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="8">
+              <p class="rm-question">現在のAI経験は？</p>
+              <div class="rm-options">
+                <label><input type="radio" name="level" value="beginner" required /><span>ほぼ初めて<small>何を聞けばよいか分からない</small></span></label>
+                <label><input type="radio" name="level" value="basic" /><span>チャッピーを時々使う<small>検索や文章作成に利用</small></span></label>
+                <label><input type="radio" name="level" value="active" /><span>仕事でも使っている<small>さらに精度と幅を高めたい</small></span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="9">
+              <p class="rm-question">使える機器と、発信への抵抗感は？</p>
+              <div class="rm-options rm-options-2">
+                <label><input type="radio" name="device" value="phone" required /><span>主にスマホ<small>手軽に始めたい</small></span></label>
+                <label><input type="radio" name="device" value="pc" /><span>パソコンも使える<small>Codexで制作もできる</small></span></label>
+              </div>
+              <div class="rm-options rm-options-2 rm-subquestion">
+                <label><input type="radio" name="face" value="ok" required /><span>顔出し・会話OK</span></label>
+                <label><input type="radio" name="face" value="no" /><span>顔出しなし希望</span></label>
+              </div>
+            </section>
+
+            <section class="rm-step" data-step="10">
+              <p class="rm-question">あなたの状況を、もう少しだけ教えてください</p>
+              <label class="rm-field"><span>現在の仕事・経験・好きなこと</span><textarea name="context" rows="4" maxlength="240" placeholder="例：飲食店で接客をしています。旅行の計画と写真撮影が好きです。SNSは見る専門です。"></textarea></label>
+              <label class="rm-field"><span>今いちばん困っていること・実現したいこと</span><textarea name="goal" rows="4" maxlength="240" placeholder="例：仕事を続けながら、3か月以内に月3万円の副収入を作りたいです。"></textarea></label>
+              <p class="rm-safe-note">入力内容は外部へ送信されず、この端末内で診断結果の作成にだけ使われます。</p>
+            </section>
+
+            <p class="rm-error" id="formError" role="alert"></p>
+            <div class="rm-form-actions"><button class="rm-secondary" type="button" data-prev>← 戻る</button><button class="rm-primary" type="button" data-next>次へ →</button><button class="rm-primary rm-generate" type="submit" hidden>ロードマップを作成する ✨</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="rm-result" id="result" hidden aria-live="polite">
+        <div class="rm-wrap">
+          <div class="rm-result-hero">
+            <div><p class="rm-eyebrow">YOUR PERSONAL ROADMAP</p><h2><span id="resultName"></span>さんの<br /><em>AI活用戦略</em></h2><p id="resultSummary"></p></div>
+            <div class="rm-score"><span>AI活用タイプ</span><strong id="resultType"></strong><small id="resultTypeNote"></small></div>
+          </div>
+          <nav class="rm-result-nav" aria-label="診断結果メニュー"><a href="#dailyResult">日常</a><a href="#workResult">仕事</a><a href="#sideResult">副業</a><a href="#planResult">30日計画</a><a href="#promptResult">プロンプト</a></nav>
+
+          <section class="rm-result-section" id="dailyResult"><div class="rm-section-title"><span>01</span><div><p>DAILY LIFE</p><h3>日常でのチャッピー活用</h3></div></div><div class="rm-card-grid" id="dailyCards"></div></section>
+          <section class="rm-result-section" id="workResult"><div class="rm-section-title"><span>02</span><div><p>WORK</p><h3>仕事でのチャッピー × Codex活用</h3></div></div><div class="rm-card-grid" id="workCards"></div></section>
+          <section class="rm-result-section rm-side-section" id="sideResult"><div class="rm-section-title"><span>03</span><div><p>ZERO TO ONE</p><h3>あなたに合う0→1副業</h3></div></div><div class="rm-side-hero"><span>最優先プラン</span><h4 id="sideTitle"></h4><p id="sideReason"></p><div id="sideMeta"></div></div><div class="rm-card-grid" id="sideCards"></div><div class="rm-caution"><strong>大切な前提</strong><p>収入を保証するものではありません。最初は小さな実績と顧客の声を作り、需要を確認してから価格や作業量を広げましょう。</p></div></section>
+          <section class="rm-result-section" id="planResult"><div class="rm-section-title"><span>04</span><div><p>30 DAYS ACTION</p><h3>迷わず進める30日ロードマップ</h3></div></div><div class="rm-timeline" id="timeline"></div></section>
+          <section class="rm-result-section" id="promptResult"><div class="rm-section-title"><span>05</span><div><p>COPY & USE</p><h3>そのまま使える専用プロンプト</h3></div></div><p class="rm-prompt-lead">回答内容を反映済みです。ボタンを押してコピーし、チャッピーまたはCodexへ貼り付けてください。</p><div class="rm-prompts" id="promptCards"></div></section>
+
+          <section class="rm-next-action"><span>NEXT ACTION</span><h3>今日やることは、ひとつだけ。</h3><p id="firstAction"></p><div class="rm-result-actions"><button type="button" class="rm-primary" data-print>結果をPDF保存・印刷</button><button type="button" class="rm-secondary" data-angle>別の角度で再提案</button><button type="button" class="rm-text-button" data-reset>回答をやり直す</button></div></section>
+          <section class="rm-soft-cta"><div><p>AI LIFE ACADEMY</p><h3>この計画を「分かった」で終わらせず、<br />実際の成果物まで完成させたい方へ。</h3><span>AI LIFEでは、ChatGPTとCodexを使った実践を、教材とサポートで完成まで進めます。</span></div><a href="apply.html">講座内容を確認する →</a></section>
+        </div>
+      </section>
+    </main>
+    <footer class="rm-footer"><span>AI LIFE ACADEMY</span><small>この診断結果は一般的な提案です。重要な判断は専門家にもご相談ください。</small></footer>
+    <script src="roadmap.js?v=20260813"></script>
+  </body>
+</html>
