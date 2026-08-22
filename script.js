@@ -898,3 +898,67 @@ if (bookingForm) {
     }
   });
 }
+
+// Editorial motion layer for the AI LIFE homepage.
+(() => {
+  const homeHero = document.querySelector(".hero");
+  if (!homeHero || reduceMotion) return;
+
+  const progress = document.createElement("div");
+  progress.className = "motion-progress";
+  progress.setAttribute("aria-hidden", "true");
+  document.body.append(progress);
+
+  const updateProgress = () => {
+    const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    document.documentElement.style.setProperty("--scroll-progress", String(Math.min(1, scrollY / max)));
+  };
+  updateProgress();
+  addEventListener("scroll", updateProgress, { passive: true });
+
+  if (matchMedia("(pointer:fine)").matches) {
+    const cursor = document.createElement("div");
+    cursor.className = "motion-cursor";
+    cursor.setAttribute("aria-hidden", "true");
+    document.body.append(cursor);
+    addEventListener("pointermove", (event) => {
+      document.documentElement.style.setProperty("--cursor-x", `${event.clientX}px`);
+      document.documentElement.style.setProperty("--cursor-y", `${event.clientY}px`);
+      cursor.classList.add("is-visible");
+      cursor.classList.toggle("is-active", Boolean(event.target.closest("a,button,summary,.motion-card")));
+    }, { passive: true });
+    document.documentElement.addEventListener("mouseleave", () => cursor.classList.remove("is-visible"));
+  }
+
+  const board = document.querySelector(".hero-proof-board");
+  if (board && matchMedia("(pointer:fine)").matches) {
+    board.addEventListener("pointermove", (event) => {
+      const box = board.getBoundingClientRect();
+      const x = (event.clientX - box.left) / box.width - 0.5;
+      const y = (event.clientY - box.top) / box.height - 0.5;
+      board.style.setProperty("--tilt-x", `${(-y * 5).toFixed(2)}deg`);
+      board.style.setProperty("--tilt-y", `${(x * 6).toFixed(2)}deg`);
+    }, { passive: true });
+    board.addEventListener("pointerleave", () => {
+      board.style.setProperty("--tilt-x", "0deg");
+      board.style.setProperty("--tilt-y", "0deg");
+    });
+  }
+
+  const tactileCards = document.querySelectorAll(".worry-card,.chapter-card,.plan-card,.bonus-list article,.support-grid article,.flow-diagram article");
+  tactileCards.forEach((card) => {
+    card.classList.add("motion-card");
+    if (!matchMedia("(pointer:fine)").matches) return;
+    card.addEventListener("pointermove", (event) => {
+      const box = card.getBoundingClientRect();
+      const x = (event.clientX - box.left) / box.width - 0.5;
+      const y = (event.clientY - box.top) / box.height - 0.5;
+      card.style.setProperty("--card-rx", `${(-y * 2.4).toFixed(2)}deg`);
+      card.style.setProperty("--card-ry", `${(x * 3).toFixed(2)}deg`);
+    }, { passive: true });
+    card.addEventListener("pointerleave", () => {
+      card.style.setProperty("--card-rx", "0deg");
+      card.style.setProperty("--card-ry", "0deg");
+    });
+  });
+})();
