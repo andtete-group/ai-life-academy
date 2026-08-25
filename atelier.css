@@ -512,3 +512,104 @@ body.is-loaded .hero-proof-board { animation:boardArrive 1s .2s cubic-bezier(.17
   .section-heading h2::before { animation:none !important; transform:none !important; }
   .proof-main i { transform:scaleX(1) !important; }
 }
+
+/* Mobile readability pass — 2026-08-25
+   Keep the editorial character, but let copy lead and visuals support. */
+@media (max-width:720px) {
+  html { scroll-padding-top:76px; }
+  body { font-size:15px; line-height:1.8; }
+
+  .section,
+  .reason-band,
+  .guarantee-band { padding:64px 20px; }
+
+  .section-inner { width:100%; }
+  .section-heading { margin-bottom:34px; }
+  .section-heading h2,
+  .reason-grid h2 { font-size:clamp(30px,8.5vw,38px); line-height:1.24; letter-spacing:-.045em; }
+  .section-heading p:not(.eyebrow) { margin-top:16px; font-size:15px; line-height:1.85; }
+  h3 { font-size:20px; line-height:1.48; letter-spacing:-.025em; }
+  p, li, summary { line-height:1.82; }
+
+  /* Hero: compact proof, no competing floating element. */
+  .hero { padding:104px 20px 60px; }
+  .hero h1 { font-size:clamp(38px,10.5vw,44px); line-height:1.08; }
+  .hero .lead { max-width:35em; font-size:15px; line-height:1.85; }
+  .hero-media { width:calc(100% - 24px); max-width:340px; margin:42px auto 0; }
+  .hero-proof-board { padding:10px; box-shadow:7px 7px 0 var(--blue); }
+  .proof-kicker { gap:8px; padding-bottom:10px; }
+  .proof-kicker b { font-size:12px; }
+  .proof-kicker small { font-size:9px; }
+  .proof-main { min-height:168px; padding:20px 14px; }
+  .proof-main strong { margin-top:18px; font-size:24px; line-height:1.35; }
+  .proof-main i { margin-top:14px; }
+  .proof-output { padding:14px 14px 4px; }
+  .proof-output b { font-size:18px; }
+  .proof-stamp { right:-10px; bottom:42px; width:58px; font-size:7px; }
+
+  /* The orange statement must be one readable column. */
+  .reason-grid { display:grid; grid-template-columns:1fr; gap:24px; }
+  .reason-grid p:not(.eyebrow) { padding:0; font-size:15px; line-height:1.9; }
+  .reason-band::after { right:-180px; opacity:.45; }
+
+  /* Reduce visual dominance in problem and image cards. */
+  .worry-grid { gap:10px; border:0; background:transparent; }
+  .worry-grid article { min-height:auto; padding:22px 20px; border:1px solid var(--line); }
+  .worry-visual { height:48px; margin-bottom:18px; opacity:.72; }
+  .worry-grid h3 { margin-top:16px; }
+  .worry-grid p { margin-top:8px; }
+
+  .split-layout,
+  .bonus-layout { grid-template-columns:1fr; gap:34px; }
+  .online-section .split-layout { padding:0; }
+  .image-panel { width:calc(100% - 12px); max-width:340px; margin:4px auto 9px; box-shadow:7px 7px 0 var(--blue); }
+  .image-panel img { width:100%; height:210px; object-fit:cover; object-position:center; }
+  .bonus-layout .image-panel { order:2; }
+  .bonus-layout > div { order:1; }
+
+  /* Cards get a consistent reading measure and breathing room. */
+  .curriculum-summary { margin-bottom:28px; }
+  .curriculum-summary a { padding:16px; font-size:14px; }
+  .chapter-grid { gap:10px; }
+  .chapter-card { padding:20px 18px 20px 22px; }
+  .chapter-card h3 { margin-top:8px; }
+  .roadmap-panel,
+  .deliverables-panel { margin-top:30px; padding:22px 18px; }
+  .support-stats,
+  .support-grid,
+  .requirements-grid,
+  .flow-diagram,
+  .bonus-list { gap:10px; }
+  .support-grid article,
+  .requirements-grid article,
+  .flow-diagram article,
+  .bonus-list article { padding:20px 18px; }
+
+  /* The desktop comparison table becomes readable mobile cards. */
+  .comparison-table { margin:0; border:0; overflow:visible; background:transparent; }
+  .comparison-table .row { display:grid; min-width:0; margin-bottom:14px; border:1px solid var(--line); background:var(--surface); }
+  .comparison-table .row.head { display:none; }
+  .comparison-table .row > div { display:block; padding:13px 16px; border:0; border-bottom:1px solid var(--line); font-size:14px; line-height:1.65; }
+  .comparison-table .row > div:last-child { border-bottom:0; }
+  .comparison-table .row > div:first-child { background:var(--ink); color:#fff; font-size:15px; font-weight:800; }
+  .comparison-table .row > div:nth-child(n+2)::before { display:block; margin-bottom:3px; color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+  .comparison-table .row > div:nth-child(2)::before { content:"あいらいふ"; }
+  .comparison-table .row > div:nth-child(3)::before { content:"一般的な動画教材"; }
+  .comparison-table .row > div:nth-child(4)::before { content:"単発セミナー"; }
+  .comparison-table .row:not(.head)>div:nth-child(2) { background:rgba(255,91,54,.1); }
+
+  .plan-card { padding:22px 18px; }
+  .plan-price strong { font-size:34px; }
+  .fine-print { font-size:12px; line-height:1.75; }
+
+  /* A fixed button covered too much copy on a 390px screen. */
+  .floating-briefing-cta { display:none; }
+
+  /* Scroll entrance effects should never make mobile copy look faded. */
+  .section-heading h2,
+  .section-heading h2::before,
+  .hero-proof-board,
+  .proof-main i,
+  .reason-band::before,
+  .guarantee-band::before { animation:none !important; opacity:1 !important; }
+}
