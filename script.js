@@ -962,3 +962,67 @@ if (bookingForm) {
     });
   });
 })();
+
+// Mobile auto-rails: gently preview every card while preserving touch scrolling.
+(() => {
+  if (!matchMedia("(max-width:720px)").matches || reduceMotion) return;
+
+  const activateRail = (selector, startDelay) => {
+    const rail = document.querySelector(selector);
+    if (!rail) return;
+    const cards = Array.from(rail.children);
+    if (cards.length < 2) return;
+
+    let index = 0;
+    let direction = 1;
+    let timer = 0;
+    let resumeTimer = 0;
+    let delayTimer = 0;
+    let visible = false;
+
+    const showNext = () => {
+      if (document.hidden) return;
+      index += direction;
+      if (index >= cards.length - 1) {
+        index = cards.length - 1;
+        direction = -1;
+      } else if (index <= 0) {
+        index = 0;
+        direction = 1;
+      }
+      rail.scrollTo({ left: cards[index].offsetLeft - rail.offsetLeft, behavior: "smooth" });
+    };
+
+    const start = () => {
+      clearInterval(timer);
+      if (!visible) return;
+      timer = window.setInterval(showNext, 3000);
+    };
+    const pauseForTouch = () => {
+      clearInterval(timer);
+      clearTimeout(resumeTimer);
+      if (visible) resumeTimer = window.setTimeout(start, 6500);
+    };
+
+    ["pointerdown", "touchstart", "wheel"].forEach((eventName) => {
+      rail.addEventListener(eventName, pauseForTouch, { passive: true });
+    });
+    const observer = new IntersectionObserver(([entry]) => {
+      const wasVisible = visible;
+      visible = entry.isIntersecting;
+      clearInterval(timer);
+      clearTimeout(delayTimer);
+      if (!visible) return;
+      if (!wasVisible) {
+        index = 0;
+        direction = 1;
+        rail.scrollTo({ left: 0, behavior: "auto" });
+      }
+      delayTimer = window.setTimeout(start, startDelay);
+    }, { threshold: 0.28 });
+    observer.observe(rail);
+  };
+
+  activateRail(".worry-grid", 1300);
+  activateRail(".support-grid", 2200);
+})();
