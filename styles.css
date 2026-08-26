@@ -1200,6 +1200,11 @@ h3 {
   perspective: 1200px;
 }
 
+.plan-grid.single-plan {
+  grid-template-columns: minmax(0, 780px);
+  justify-content: center;
+}
+
 .plan-card {
   position: relative;
   display: grid;
@@ -3146,7 +3151,7 @@ h3 {
 }
 
 .apply-final-actions {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .apply-final-actions .button.secondary {

@@ -81,9 +81,7 @@ SHARED_MEMBER_PASSWORD = 共有パスワード
 
 ## Stripe決済リンク
 
-- コンテンツプラン: 65,000円（税込）
-  - 決済リンク: `https://buy.stripe.com/14AbJ21iOdo11qM1UG6kg03`
-- 伴走サポートプラン: 通常価格 220,000円（税込）
+- AI LIFE ACADEMY（教材・伴走サポート付き）: 通常価格 220,000円（税込）
   - 説明会参加者クーポン: `FS20260701`
   - クーポン適用後: 165,000円（税込）
   - 決済リンク: `https://buy.stripe.com/9B65kE7Hc1Fjc5q7f06kg02`
