@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>予約管理 | あいらいふ（AI LIFE）</title>
     <meta name="robots" content="noindex" />
-    <link rel="stylesheet" href="styles.css?v=20260712-hero-booking" />
+    <link rel="stylesheet" href="styles.css?v=20260902-weekly-booking" />
   </head>
   <body>
     <header class="site-header" aria-label="サイトヘッダー">
@@ -86,7 +86,7 @@
               </label>
               <label>
                 <span>定員</span>
-                <input type="number" name="capacity" min="1" value="5" required />
+                <input type="number" name="capacity" min="1" max="1" value="1" required />
               </label>
             </div>
             <label>
@@ -98,6 +98,7 @@
               <span>予約ページに公開する</span>
             </label>
             <button class="button primary" type="submit">日程を追加する</button>
+            <p class="form-help">マンツーマン対応のため、各枠の定員は1名です。終了時間は開始時間の1時間後に自動設定されます。</p>
             <p class="form-status" id="adminStatus" hidden></p>
           </form>
         </div>
@@ -117,8 +118,8 @@
       </section>
     </main>
 
-    <script src="booking-slots.js?v=20260712-hero-booking"></script>
-    <script src="script.js?v=20260712-hero-booking"></script>
-    <script src="admin.js?v=20260712-hero-booking"></script>
+    <script src="booking-slots.js?v=20260902-weekly-booking"></script>
+    <script src="script.js?v=20260902-weekly-booking"></script>
+    <script src="admin.js?v=20260902-weekly-booking"></script>
   </body>
 </html>

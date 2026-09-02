@@ -192,14 +192,14 @@ if (slotForm) {
       weekLabel: formatMonthLabel(dateIso),
       date,
       time,
-      capacity: data.get("capacity") || "5",
-      remaining: data.get("capacity") || "5",
+      capacity: "1",
+      remaining: "1",
       note: data.get("note") || "オンラインZoom説明会",
       isPublic: data.get("isPublic") ? "TRUE" : "FALSE",
     });
 
     slotForm.reset();
-    slotForm.capacity.value = "5";
+    slotForm.capacity.value = "1";
     slotForm.note.value = "オンラインZoom説明会";
     slotForm.isPublic.checked = true;
     await loadAdminSlots();

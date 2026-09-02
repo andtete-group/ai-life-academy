@@ -531,7 +531,7 @@ const bookingForm = document.querySelector("#bookingForm");
 const bookingSlotsContainer = document.querySelector("#bookingSlots");
 const bookingZoomUrl = "https://us05web.zoom.us/j/87362640884?pwd=K1hsImx0aSZtk5du0V5NtHF1UwCAXs.1";
 const bookingConfig = window.AI_LIFE_BOOKING_CONFIG || {};
-let bookingCalendarMonth = null;
+let bookingCalendarWeek = null;
 
 function fetchJsonp(url) {
   return new Promise((resolve, reject) => {
@@ -610,10 +610,6 @@ function isExpiredSlot(slot) {
   return start.getTime() <= Date.now();
 }
 
-function formatMonthTitle(date) {
-  return `${date.getFullYear()}年${date.getMonth() + 1}月`;
-}
-
 function formatDateKey(date) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -632,19 +628,37 @@ function buildCalendarSlots(slots) {
   return grouped;
 }
 
-function getMonthStart(date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
+function getWeekStart(date) {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const mondayOffset = (start.getDay() + 6) % 7;
+  start.setDate(start.getDate() - mondayOffset);
+  start.setHours(0, 0, 0, 0);
+  return start;
 }
 
-function addMonths(date, amount) {
-  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
+function addDays(date, amount) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + amount);
+  return result;
 }
 
-function getInitialCalendarMonth(slotMap) {
-  const today = getMonthStart(new Date());
+function formatWeekTitle(start) {
+  const end = addDays(start, 6);
+  const startText = `${start.getMonth() + 1}月${start.getDate()}日`;
+  const endText = `${end.getMonth() + 1}月${end.getDate()}日`;
+  return `${start.getFullYear()}年 ${startText}〜${endText}`;
+}
+
+function formatDayHeading(date) {
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  return { day: `${date.getMonth() + 1}/${date.getDate()}`, weekday: weekdays[date.getDay()] };
+}
+
+function getInitialCalendarWeek(slotMap) {
+  const currentWeek = getWeekStart(new Date());
   const dates = [...slotMap.values()].map((item) => item.date).sort((a, b) => a - b);
-  const upcoming = dates.find((date) => getMonthStart(date) >= today);
-  return getMonthStart(upcoming || dates[0] || new Date());
+  const upcoming = dates.find((date) => date >= currentWeek);
+  return getWeekStart(upcoming || new Date());
 }
 
 function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
@@ -654,14 +668,6 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   const slots = flattenSlots(weeks);
   bookingSlotsContainer.replaceChildren();
 
-  if (slots.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "slot-loading";
-    empty.textContent = "現在、予約可能な日程は準備中です。";
-    bookingSlotsContainer.append(empty);
-    return;
-  }
-
   const calendar = document.createElement("div");
   calendar.className = "booking-calendar";
 
@@ -670,110 +676,102 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   selected.textContent = "空き日程をタップしてください。";
 
   const slotMap = buildCalendarSlots(slots);
-  if (!bookingCalendarMonth) bookingCalendarMonth = getInitialCalendarMonth(slotMap);
-  const calendarStart = getMonthStart(bookingCalendarMonth);
-  const daysInMonth = new Date(calendarStart.getFullYear(), calendarStart.getMonth() + 1, 0).getDate();
-  const offset = calendarStart.getDay();
+  if (!bookingCalendarWeek) bookingCalendarWeek = getInitialCalendarWeek(slotMap);
+  const calendarStart = getWeekStart(bookingCalendarWeek);
 
   const header = document.createElement("div");
   header.className = "calendar-header";
   const title = document.createElement("h3");
-  title.textContent = formatMonthTitle(calendarStart);
+  title.textContent = formatWeekTitle(calendarStart);
   const legend = document.createElement("span");
-  legend.textContent = "空き日程を選択";
+  legend.textContent = "1枠60分・マンツーマン";
   const controls = document.createElement("div");
   controls.className = "calendar-month-controls";
   const previousButton = document.createElement("button");
   previousButton.type = "button";
-  previousButton.textContent = "前の月";
+  previousButton.textContent = "← 前の週";
   const nextButton = document.createElement("button");
   nextButton.type = "button";
-  nextButton.textContent = "次の月";
-  const currentMonth = getMonthStart(new Date());
-  previousButton.disabled = calendarStart <= currentMonth;
+  nextButton.textContent = "次の週 →";
+  const currentWeek = getWeekStart(new Date());
+  previousButton.disabled = calendarStart <= currentWeek;
   previousButton.addEventListener("click", () => {
-    bookingCalendarMonth = addMonths(calendarStart, -1);
+    bookingCalendarWeek = addDays(calendarStart, -7);
     renderBookingSlots(weeksSource);
   });
   nextButton.addEventListener("click", () => {
-    bookingCalendarMonth = addMonths(calendarStart, 1);
+    bookingCalendarWeek = addDays(calendarStart, 7);
     renderBookingSlots(weeksSource);
   });
   controls.append(previousButton, nextButton);
   header.append(title, legend, controls);
 
   const grid = document.createElement("div");
-  grid.className = "calendar-grid";
-  ["日", "月", "火", "水", "木", "金", "土"].forEach((day) => {
-    const cell = document.createElement("span");
-    cell.className = "calendar-weekday";
-    cell.textContent = day;
-    grid.append(cell);
-  });
+  grid.className = "calendar-grid weekly-calendar-grid";
 
-  for (let i = 0; i < offset; i += 1) {
-    const blank = document.createElement("span");
-    blank.className = "calendar-day is-blank";
-    grid.append(blank);
-  }
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const date = new Date(calendarStart.getFullYear(), calendarStart.getMonth(), day);
+  for (let dayOffset = 0; dayOffset < 7; dayOffset += 1) {
+    const date = addDays(calendarStart, dayOffset);
     const key = formatDateKey(date);
     const entry = slotMap.get(key);
-    const daySlots = entry?.slots || [];
-    const available = daySlots.find((slot) => Number(slot.remaining ?? slot.capacity ?? 0) > 0);
-    const representative = available || daySlots[0];
-    const isFull = daySlots.length > 0 && !available;
-    const isAvailable = Boolean(available);
-    const cell = representative ? document.createElement("label") : document.createElement("span");
-    cell.className = "calendar-day";
-    if (representative) cell.classList.add("has-slot");
-    if (isFull) cell.classList.add("is-full");
+    const daySlots = (entry?.slots || []).sort((a, b) => String(a.time || "").localeCompare(String(b.time || ""), "ja"));
+    const column = document.createElement("section");
+    column.className = "week-day-column";
+    const heading = document.createElement("div");
+    heading.className = "week-day-heading";
+    const headingText = formatDayHeading(date);
+    heading.innerHTML = `<span>${headingText.weekday}</span><strong>${headingText.day}</strong>`;
+    if (formatDateKey(date) === formatDateKey(new Date())) heading.classList.add("is-today");
+    column.append(heading);
 
-    const dateText = document.createElement("strong");
-    dateText.textContent = String(day);
-    cell.append(dateText);
+    const list = document.createElement("div");
+    list.className = "week-time-list";
+    if (daySlots.length === 0) {
+      const emptySlot = document.createElement("span");
+      emptySlot.className = "week-no-slot";
+      emptySlot.textContent = "受付枠なし";
+      list.append(emptySlot);
+    }
 
-    if (representative) {
-      const time = document.createElement("small");
-      time.textContent = representative.time || "時間未定";
-      const seat = document.createElement("em");
-      const remaining = Number(representative.remaining ?? representative.capacity ?? 0);
-      seat.textContent = isFull ? "満員御礼" : "受付中";
-      cell.append(time, seat);
-
+    daySlots.forEach((slot) => {
+      const remaining = Number(slot.remaining ?? slot.capacity ?? 0);
+      const isAvailable = remaining > 0;
+      const option = document.createElement("label");
+      option.className = `week-time-option${isAvailable ? "" : " is-full"}`;
+      const timeText = document.createElement("strong");
+      timeText.textContent = String(slot.time || "時間未定").split("〜")[0];
+      const statusText = document.createElement("small");
+      statusText.textContent = isAvailable ? "○ 予約可" : "満員";
+      option.append(timeText, statusText);
       const input = document.createElement("input");
       input.type = "radio";
       input.name = "slot";
-      input.value = representative.label || `${representative.date || ""} ${representative.time || ""}`.trim();
-      input.dataset.slotId = representative.id || "";
+      input.value = slot.label || `${slot.date || ""} ${slot.time || ""}`.trim();
+      input.dataset.slotId = slot.id || "";
       input.required = isAvailable;
       input.disabled = !isAvailable;
       input.className = "calendar-radio";
-      cell.append(input);
+      option.append(input);
 
       if (isAvailable) {
-        cell.addEventListener("click", () => {
-          bookingSlotsContainer.querySelectorAll(".calendar-day.is-selected").forEach((element) => {
+        option.addEventListener("click", () => {
+          bookingSlotsContainer.querySelectorAll(".week-time-option.is-selected").forEach((element) => {
             element.classList.remove("is-selected");
           });
           input.checked = true;
-          cell.classList.add("is-selected");
+          option.classList.add("is-selected");
           selected.textContent = `選択中: ${input.value}`;
         });
       }
-    }
-
-    grid.append(cell);
+      list.append(option);
+    });
+    column.append(list);
+    grid.append(column);
   }
 
-  const hasMonthSlots = [...slotMap.values()].some((entry) => {
-    const month = getMonthStart(entry.date);
-    return month.getTime() === calendarStart.getTime();
-  });
-  if (!hasMonthSlots) {
-    selected.textContent = "この月の公開枠はまだありません。次の月も確認できます。";
+  const weekEnd = addDays(calendarStart, 7);
+  const hasWeekSlots = [...slotMap.values()].some((entry) => entry.date >= calendarStart && entry.date < weekEnd);
+  if (!hasWeekSlots) {
+    selected.textContent = "この週の受付枠はまだありません。次の週を確認してください。";
   }
 
   calendar.append(header, grid, selected);
@@ -789,7 +787,7 @@ async function loadManagedBookingSlots() {
   try {
     const data = await fetchJsonp(`${endpoint}?action=slots`);
     if (data && data.ok && Array.isArray(data.weeks)) {
-      bookingCalendarMonth = null;
+      bookingCalendarWeek = null;
       renderBookingSlots(data.weeks);
     }
   } catch (error) {

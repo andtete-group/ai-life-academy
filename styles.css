@@ -4177,6 +4177,151 @@ h3 {
   font-weight: 900;
 }
 
+/* 7日間のマンツーマン予約表 */
+.weekly-calendar-grid {
+  grid-template-columns: repeat(7, minmax(108px, 1fr));
+  align-items: stretch;
+  overflow-x: auto;
+  padding: 2px 2px 12px;
+  scroll-snap-type: x proximity;
+  scrollbar-color: rgba(27, 113, 229, 0.35) transparent;
+}
+
+.week-day-column {
+  min-width: 108px;
+  overflow: hidden;
+  border: 1px solid rgba(20, 45, 56, 0.11);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  scroll-snap-align: start;
+}
+
+.week-day-heading {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(20, 45, 56, 0.09);
+  background: #f4f8f7;
+}
+
+.week-day-heading span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.week-day-heading strong {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.week-day-heading.is-today {
+  background: linear-gradient(135deg, #e7f8f3, #eef7ff);
+}
+
+.week-day-heading.is-today span::after {
+  content: " TODAY";
+  color: var(--teal);
+  font-size: 8px;
+}
+
+.week-time-list {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-height: 118px;
+  padding: 8px;
+}
+
+.week-time-option {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  min-height: 58px;
+  padding: 8px 4px;
+  border: 1px solid rgba(27, 113, 229, 0.2);
+  border-radius: 9px;
+  background: linear-gradient(180deg, #fff, #f3faff);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.week-time-option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(27, 113, 229, 0.55);
+  box-shadow: 0 8px 20px rgba(27, 113, 229, 0.12);
+}
+
+.week-time-option.is-selected {
+  border-color: var(--blue);
+  background: linear-gradient(145deg, #e5f5ff, #effbf7);
+  box-shadow: 0 0 0 3px rgba(27, 113, 229, 0.12);
+}
+
+.week-time-option.is-full {
+  border-color: transparent;
+  background: #f2f4f4;
+  color: #9aa5a2;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.week-time-option strong {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.week-time-option small {
+  color: var(--teal);
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.week-time-option.is-full small {
+  color: #9aa5a2;
+}
+
+.week-no-slot {
+  display: grid;
+  min-height: 58px;
+  place-items: center;
+  color: #a1aba8;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .calendar-header {
+    align-items: flex-start;
+  }
+
+  .calendar-header h3 {
+    width: 100%;
+    font-size: 17px;
+  }
+
+  .calendar-header > span {
+    order: 3;
+  }
+
+  .calendar-month-controls {
+    width: 100%;
+  }
+
+  .calendar-month-controls button {
+    flex: 1;
+  }
+
+  .weekly-calendar-grid {
+    margin-right: -18px;
+    padding-right: 18px;
+  }
+}
+
 .slot-week {
   display: grid;
   gap: 10px;
