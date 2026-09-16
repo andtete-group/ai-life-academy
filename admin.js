@@ -8,6 +8,7 @@ const adminState = {
   endpoint: localStorage.getItem("aiLifeBookingApi") || adminBookingConfig.apiEndpoint || "",
   key: localStorage.getItem("aiLifeBookingAdminKey") || "",
 };
+let adminSlotRows = [];
 const adminWeekdays = ["日", "月", "火", "水", "木", "金", "土"];
 
 function setAdminStatus(message) {
@@ -24,7 +25,13 @@ function adminJsonp(url) {
     script.src = `${url}${separator}callback=${encodeURIComponent(callbackName)}`;
     script.async = true;
 
+    const timeout = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("予約管理システムから応答がありません。URLまたは公開設定を確認してください。"));
+    }, 15000);
+
     const cleanup = () => {
+      window.clearTimeout(timeout);
       delete window[callbackName];
       script.remove();
     };
@@ -69,7 +76,7 @@ function formatJapaneseDate(value) {
 function formatMonthLabel(value) {
   const date = parseDateInput(value);
   if (!date) return "予約可能日程";
-  return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+  return `予約枠｜${date.getFullYear()}年${date.getMonth() + 1}月`;
 }
 
 function buildTimeRange(startTime) {
@@ -145,13 +152,19 @@ function renderAdminSlots(weeks) {
 }
 
 async function loadAdminSlots() {
-  if (!adminState.endpoint || !adminState.key) return;
-  const data = await adminJsonp(`${adminState.endpoint}?action=slots&adminKey=${encodeURIComponent(adminState.key)}&includePrivate=1`);
-  if (data && data.ok) {
-    renderAdminSlots(data.weeks || []);
+  if (!adminState.endpoint || !adminState.key) return null;
+  try {
+    const data = await adminJsonp(`${adminState.endpoint}?action=slots&adminKey=${encodeURIComponent(adminState.key)}&includePrivate=1&_=${Date.now()}`);
+    if (!data || !data.ok) throw new Error(data?.error || "日程を読み込めませんでした。");
+    const weeks = data.weeks || [];
+    adminSlotRows = weeks.flatMap((week) => week.slots || []);
+    renderAdminSlots(weeks);
     setAdminStatus("日程を読み込みました。");
-  } else {
-    setAdminStatus(data?.error || "日程を読み込めませんでした。");
+    return data;
+  } catch (error) {
+    adminSlotRows = [];
+    setAdminStatus(error.message || "日程を読み込めませんでした。");
+    return null;
   }
 }
 
@@ -188,22 +201,44 @@ if (slotForm) {
       return;
     }
 
-    await postAdminAction("addSlot", {
-      weekLabel: formatMonthLabel(dateIso),
-      date,
-      time,
-      capacity: "1",
-      remaining: "1",
-      note: data.get("note") || "オンラインZoom説明会",
-      isPublic: data.get("isPublic") ? "TRUE" : "FALSE",
-    });
+    const sameSlot = (slot) => slot.date === date && slot.time === time;
+    if (adminSlotRows.some(sameSlot)) {
+      setAdminStatus("同じ日時の枠はすでに登録されています。重複追加は行いませんでした。");
+      return;
+    }
 
-    slotForm.reset();
-    slotForm.capacity.value = "1";
-    slotForm.note.value = "オンラインZoom説明会";
-    slotForm.isPublic.checked = true;
-    await loadAdminSlots();
-    setAdminStatus("日程を追加しました。");
+    const submitButton = slotForm.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    setAdminStatus("保存しています…");
+
+    try {
+      await postAdminAction("addSlot", {
+        weekLabel: formatMonthLabel(dateIso),
+        date,
+        time,
+        capacity: "1",
+        remaining: "1",
+        note: data.get("note") || "オンラインZoom説明会",
+        isPublic: data.get("isPublic") ? "TRUE" : "FALSE",
+      });
+
+      await new Promise((resolve) => window.setTimeout(resolve, 700));
+      const refreshed = await loadAdminSlots();
+      const saved = Boolean(refreshed) && adminSlotRows.some(sameSlot);
+      if (!saved) {
+        throw new Error("保存を確認できませんでした。管理キー、保存先URL、Apps Scriptの公開権限を確認してください。");
+      }
+
+      slotForm.reset();
+      slotForm.capacity.value = "1";
+      slotForm.note.value = "オンラインZoom説明会";
+      slotForm.isPublic.checked = true;
+      setAdminStatus(`日程を追加しました：${date} ${time}`);
+    } catch (error) {
+      setAdminStatus(error.message || "日程を追加できませんでした。");
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 }
 
