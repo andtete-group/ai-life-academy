@@ -566,7 +566,7 @@ function fetchJsonp(url) {
 }
 
 function normalizeSlotGroups(weeks) {
-  return (weeks || []).map((week) => ({
+  const normalized = (weeks || []).map((week) => ({
     label: week.label || "予約可能日程",
     slots: (week.slots || []).map((slot) => ({
       ...slot,
@@ -576,6 +576,40 @@ function normalizeSlotGroups(weeks) {
       remaining: Number(slot.remaining ?? slot.capacity ?? 0),
     })).filter((slot) => !isExpiredSlot(slot)),
   })).filter((week) => week.slots.length > 0);
+
+  // The spreadsheet may contain the same date and time in separate groups.
+  // Keep one safe record and prefer the lowest remaining count.
+  const uniqueSlots = new Map();
+  normalized.forEach((week) => {
+    week.slots.forEach((slot) => {
+      const key = `${slot.date || ""}|${slot.time || ""}`;
+      const previous = uniqueSlots.get(key);
+      if (!previous || slot.remaining < previous.remaining) uniqueSlots.set(key, slot);
+    });
+  });
+
+  return [{ label: "最新の予約可能日程", slots: [...uniqueSlots.values()] }];
+}
+
+function readBookingSlotCache() {
+  try {
+    const key = bookingConfig.cacheKey || "aiLifeBookingSlotsV2";
+    const cached = JSON.parse(localStorage.getItem(key) || "null");
+    const maxAge = Number(bookingConfig.cacheMaxAge || 21600000);
+    if (!cached || !Array.isArray(cached.weeks) || Date.now() - Number(cached.savedAt || 0) > maxAge) return null;
+    return cached.weeks;
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveBookingSlotCache(weeks) {
+  try {
+    const key = bookingConfig.cacheKey || "aiLifeBookingSlotsV2";
+    localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), weeks }));
+  } catch (_) {
+    // Private browsing or storage restrictions should never block booking.
+  }
 }
 
 function flattenSlots(weeks) {
@@ -663,6 +697,8 @@ function getInitialCalendarWeek(slotMap) {
 
 function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   if (!bookingSlotsContainer) return;
+
+  const selectedBeforeRefresh = bookingSlotsContainer.querySelector('input[name="slot"]:checked')?.dataset.slotId || "";
 
   const weeks = Array.isArray(weeksSource) ? normalizeSlotGroups(weeksSource) : [];
   const slots = flattenSlots(weeks);
@@ -776,25 +812,33 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
 
   calendar.append(header, grid, selected);
   bookingSlotsContainer.append(calendar);
+
+  if (selectedBeforeRefresh) {
+    const previousSelection = [...bookingSlotsContainer.querySelectorAll('input[name="slot"]')]
+      .find((input) => input.dataset.slotId === selectedBeforeRefresh && !input.disabled);
+    if (previousSelection) {
+      previousSelection.checked = true;
+      previousSelection.closest(".week-time-option")?.classList.add("is-selected");
+      selected.textContent = `選択中: ${previousSelection.value}`;
+    }
+  }
 }
 
-renderBookingSlots();
+renderBookingSlots(readBookingSlotCache() || window.AI_LIFE_BOOKING_WEEKS);
 
 async function loadManagedBookingSlots() {
   const endpoint = bookingConfig.apiEndpoint || bookingForm?.dataset.bookingApi || "";
   if (!bookingSlotsContainer || !endpoint) return;
 
   try {
-    const data = await fetchJsonp(`${endpoint}?action=slots`);
+    const data = await fetchJsonp(`${endpoint}?action=slots&_=${Date.now()}`);
     if (data && data.ok && Array.isArray(data.weeks)) {
-      bookingCalendarWeek = null;
+      saveBookingSlotCache(data.weeks);
       renderBookingSlots(data.weeks);
     }
   } catch (error) {
-    const warning = document.createElement("p");
-    warning.className = "slot-loading";
-    warning.textContent = "管理システムの日程を読み込めないため、仮の日程を表示しています。";
-    bookingSlotsContainer.prepend(warning);
+    // The immediately rendered cache remains usable when Google is slow.
+    console.warn("Live booking slots could not be refreshed; using the local cache.", error);
   }
 }
 
