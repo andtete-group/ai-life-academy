@@ -861,7 +861,6 @@ if (bookingForm) {
       slot: bookingForm.dataset.entrySlot,
       name: bookingForm.dataset.entryName,
       email: bookingForm.dataset.entryEmail,
-      phone: bookingForm.dataset.entryPhone,
       experience: bookingForm.dataset.entryExperience,
       interest: bookingForm.dataset.entryInterest,
       zoom: bookingForm.dataset.entryZoom,
@@ -890,7 +889,6 @@ if (bookingForm) {
           slot: data.get("slot") || "",
           name: data.get("name") || "",
           email: data.get("email") || "",
-          phone: data.get("phone") || "",
           experience: data.get("experience") || "",
           interest: data.get("interest") || "",
           zoom: bookingZoomUrl,
@@ -912,7 +910,6 @@ if (bookingForm) {
       googleFormData.append(googleFormEntries.slot, data.get("slot") || "");
       googleFormData.append(googleFormEntries.name, data.get("name") || "");
       googleFormData.append(googleFormEntries.email, data.get("email") || "");
-      googleFormData.append(googleFormEntries.phone, data.get("phone") || "");
       googleFormData.append(googleFormEntries.experience, data.get("experience") || "");
       googleFormData.append(googleFormEntries.interest, data.get("interest") || "");
       googleFormData.append(googleFormEntries.zoom, bookingZoomUrl);

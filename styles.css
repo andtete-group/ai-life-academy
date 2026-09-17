@@ -5046,3 +5046,168 @@ h3 {
     transform: none !important;
   }
 }
+
+/* Booking page — TikTok LP editorial theme */
+.booking-simple-page {
+  --booking-ink: #292424;
+  --booking-muted: #756c69;
+  --booking-paper: #f3ebe6;
+  --booking-rose: #c97786;
+  --booking-plum: #755f78;
+  background: var(--booking-paper);
+  color: var(--booking-ink);
+}
+
+.booking-simple-hero {
+  background:
+    radial-gradient(circle at 85% 18%, rgba(205, 151, 164, 0.26), transparent 35%),
+    radial-gradient(circle at 8% 88%, rgba(196, 179, 211, 0.28), transparent 34%),
+    linear-gradient(145deg, #f7f1ed 0%, #eee3df 55%, #e7dce5 100%);
+  color: var(--booking-ink);
+}
+
+.booking-simple-hero::after {
+  background-image: radial-gradient(rgba(82, 66, 68, 0.12) 0.7px, transparent 0.7px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(90deg, #000, transparent 82%);
+}
+
+.booking-kicker,
+.booking-simple-lead {
+  color: var(--booking-muted);
+}
+
+.booking-kicker span {
+  background: #2e2929;
+  color: #fffaf6;
+}
+
+.booking-simple-copy h1 {
+  color: var(--booking-ink);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+.booking-simple-copy h1 em {
+  color: var(--booking-rose);
+  text-shadow: none;
+}
+
+.booking-quick-points li {
+  border-color: rgba(80, 64, 65, 0.14);
+  background: rgba(255, 255, 255, 0.5);
+  color: #514849;
+}
+
+.booking-hero-panel {
+  border-color: rgba(88, 69, 72, 0.12);
+  background: rgba(255, 252, 249, 0.72);
+  box-shadow: 0 28px 70px rgba(82, 61, 67, 0.13);
+}
+
+.booking-hero-panel-label {
+  background: #2e2929;
+  color: #fffaf6;
+}
+
+.booking-hero-panel strong { color: var(--booking-rose); }
+.booking-hero-panel b { color: var(--booking-ink); }
+.booking-hero-panel p { color: var(--booking-muted); }
+
+.button.primary.booking-hero-cta,
+.button.primary.booking-submit,
+.booking-simple-flow .button.primary {
+  border: 0;
+  background: linear-gradient(135deg, #3b3335, #78616a);
+  box-shadow: 0 16px 36px rgba(83, 59, 68, 0.22);
+}
+
+.booking-simple-page + .site-footer,
+.booking-simple-page ~ .site-footer { background: #2f282a; }
+
+.booking-theme .site-header .nav-cta {
+  border-color: rgba(117, 95, 120, .2);
+  background: #f6eeee;
+  color: #755f78;
+}
+
+.booking-benefits { background: #f8f3ef; }
+.booking-section-heading > span { color: var(--booking-rose); }
+.booking-section-heading h2 { color: var(--booking-ink); }
+
+.booking-benefit-card {
+  border-color: rgba(84, 68, 71, 0.1);
+  border-radius: 20px;
+  background: #fffdfb;
+  box-shadow: 0 18px 44px rgba(82, 64, 67, 0.08);
+}
+
+.booking-benefit-image { background: #ded2cf; }
+.booking-benefit-image::after { background: linear-gradient(transparent, rgba(43, 34, 36, 0.48)); }
+.booking-benefit-image span { background: rgba(46, 39, 41, 0.82); }
+.booking-benefit-body p { color: var(--booking-rose); }
+.booking-benefit-body h3 { color: var(--booking-ink); }
+.booking-benefit-body h3 strong,
+.booking-benefit-card--rose .booking-benefit-body h3 strong,
+.booking-benefit-card--violet .booking-benefit-body h3 strong,
+.booking-benefit-card--cyan .booking-benefit-body h3 strong { color: var(--booking-plum); }
+
+.booking-benefit-card:first-child .booking-benefit-image img {
+  object-position: center 12%;
+}
+
+.booking-benefit-image--graphic {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255,255,255,.5), transparent 28%),
+    linear-gradient(145deg, #cab8c9, #eadfd9 58%, #c8d2cf);
+}
+
+.booking-editorial-visual {
+  position: relative;
+  display: grid;
+  width: 76%;
+  min-height: 76%;
+  align-content: center;
+  padding: 18px;
+  border: 1px solid rgba(53, 43, 46, .14);
+  background: rgba(255, 253, 250, .68);
+  color: #332b2d;
+  transform: rotate(-2deg);
+}
+
+.booking-editorial-visual small { letter-spacing: .18em; }
+.booking-editorial-visual strong { margin-top: 8px; font-size: clamp(20px, 2.2vw, 29px); line-height: 1.05; }
+.booking-editorial-visual i { margin-top: 14px; color: var(--booking-rose); font-size: 11px; font-style: normal; font-weight: 900; letter-spacing: .14em; }
+
+.booking-roadmap-banner {
+  border: 1px solid rgba(83, 65, 70, 0.12);
+  background: linear-gradient(135deg, #43383c, #7c6672);
+}
+.booking-roadmap-banner span { color: #f1c9d0; }
+
+.booking-simple-page .booking-calendar-section { background: #fffdfb; }
+.booking-step-label { background: #eee2e4; color: #8b5966; }
+.booking-simple-page .booking-form { border: 1px solid rgba(77, 62, 65, .1); background: #fff; box-shadow: 0 24px 60px rgba(77, 59, 64, .09); }
+.booking-simple-page .booking-form legend span,
+.booking-form-divider span { background: var(--booking-plum); }
+
+.booking-simple-flow {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(207, 165, 177, .18), transparent 30%),
+    #342c2f;
+}
+.booking-simple-flow .booking-section-heading > span { color: #e8b9c3; }
+.booking-flow-compact b { background: linear-gradient(135deg, #c77b8a, #796173); }
+
+@media (max-width: 620px) {
+  .booking-benefit-grid { grid-template-columns: 1fr; gap: 14px; }
+  .booking-benefit-card { display: grid; grid-template-columns: 42% 58%; min-height: 190px; }
+  .booking-benefit-image { aspect-ratio: auto; min-height: 100%; }
+  .booking-benefit-body { min-height: 190px; padding: 16px 14px; }
+  .booking-benefit-body h3 { font-size: 17px; }
+  .booking-benefit-body small { font-size: 11px; }
+  .booking-mobile-cta { border-color: rgba(255,255,255,.35); background: linear-gradient(135deg, #4a3b40, #8e6671); }
+}
