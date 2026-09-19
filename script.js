@@ -529,7 +529,7 @@ initFinalCtaInteraction();
 
 const bookingForm = document.querySelector("#bookingForm");
 const bookingSlotsContainer = document.querySelector("#bookingSlots");
-const bookingZoomUrl = "https://us05web.zoom.us/j/87362640884?pwd=K1hsImx0aSZtk5du0V5NtHF1UwCAXs.1";
+const bookingZoomUrl = "https://us05web.zoom.us/j/9070017228?pwd=QNhP9pldamuMNDbM8fO3EmtbczKF30.1";
 const bookingConfig = window.AI_LIFE_BOOKING_CONFIG || {};
 let bookingCalendarWeek = null;
 
