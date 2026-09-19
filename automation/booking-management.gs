@@ -41,6 +41,7 @@ const RESERVATION_HEADERS = [
   '購入者ステータス',
   '流入元',
   'メモ',
+  'リマインド送信日時',
 ];
 
 function doGet(e) {
@@ -167,6 +168,7 @@ function reserveSlot_(e) {
       '',
       '未申込',
       source,
+      '',
       '',
     ]);
 
@@ -499,6 +501,110 @@ Zoom: ${data.zoomUrl}
 パスコード: ${BOOKING_CONFIG.zoomPasscode}
 
 当日はお時間になりましたらZoomへご参加ください。
+
+あいらいふ運営事務局`;
+}
+
+/**
+ * 30分前リマインド用の時間トリガーを設定する。
+ * Apps Scriptのエディターから1回だけ実行する。
+ */
+function setupReminderTrigger() {
+  const handler = 'sendUpcomingBookingReminders';
+  ScriptApp.getProjectTriggers()
+    .filter((trigger) => trigger.getHandlerFunction() === handler)
+    .forEach((trigger) => ScriptApp.deleteTrigger(trigger));
+
+  ScriptApp.newTrigger(handler)
+    .timeBased()
+    .everyMinutes(5)
+    .create();
+
+  return 'リマインド送信を5分ごとに確認するトリガーを設定しました。';
+}
+
+/**
+ * 開始30分前の予約者へリマインドを1回だけ送信する。
+ * 時間トリガーの遅延を考慮し、開始20〜35分前を対象とする。
+ */
+function sendUpcomingBookingReminders() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return;
+
+  try {
+    const sheet = getSheet_(BOOKING_CONFIG.reservationsSheetName, RESERVATION_HEADERS);
+    if (sheet.getLastRow() <= 1) return;
+
+    const reminderColumn = RESERVATION_HEADERS.indexOf('リマインド送信日時') + 1;
+    const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, RESERVATION_HEADERS.length).getValues();
+    const now = new Date();
+
+    values.forEach((row, index) => {
+      const reservationStatus = String(row[RESERVATION_HEADERS.indexOf('予約ステータス')] || '');
+      const email = normalizeEmail_(row[RESERVATION_HEADERS.indexOf('メールアドレス')]);
+      const reminderSentAt = row[RESERVATION_HEADERS.indexOf('リマインド送信日時')];
+      const slotLabel = String(row[RESERVATION_HEADERS.indexOf('希望日程')] || '');
+      const start = parseReservationStart_(slotLabel);
+
+      if (!email || reminderSentAt || !start) return;
+      if (/(キャンセル|取消|無効)/.test(reservationStatus)) return;
+
+      const minutesUntilStart = (start.getTime() - now.getTime()) / 60000;
+      if (minutesUntilStart < 20 || minutesUntilStart > 35) return;
+
+      const name = String(row[RESERVATION_HEADERS.indexOf('氏名')] || 'お客様');
+      GmailApp.sendEmail(
+        email,
+        '【AI LIFE ACADEMY】無料AI体験会開始30分前のお知らせ',
+        buildReminderMail_({ name, slot: slotLabel }),
+        {
+          name: BOOKING_CONFIG.senderName,
+          replyTo: BOOKING_CONFIG.adminEmail,
+        }
+      );
+
+      // 送信成功後に記録し、同じ予約への重複送信を防ぐ。
+      sheet.getRange(index + 2, reminderColumn).setValue(new Date());
+    });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function parseReservationStart_(slotLabel) {
+  const dateMatch = String(slotLabel || '').match(/(?:(\d{4})年)?(\d{1,2})月(\d{1,2})日/);
+  const timeMatch = String(slotLabel || '').match(/(\d{1,2}):(\d{2})/);
+  if (!dateMatch || !timeMatch) return null;
+
+  const now = new Date();
+  return new Date(
+    Number(dateMatch[1] || now.getFullYear()),
+    Number(dateMatch[2]) - 1,
+    Number(dateMatch[3]),
+    Number(timeMatch[1]),
+    Number(timeMatch[2]),
+    0,
+    0
+  );
+}
+
+function buildReminderMail_(data) {
+  return `${data.name} 様
+
+本日ご予約いただいている無料AI体験会の開始30分前となりました。
+
+━━━━━━━━━━
+ご予約内容
+━━━━━━━━━━
+
+日程: ${data.slot}
+Zoom: ${BOOKING_CONFIG.zoomUrl}
+ミーティングID: ${BOOKING_CONFIG.zoomMeetingId}
+パスコード: ${BOOKING_CONFIG.zoomPasscode}
+
+お時間になりましたら、上記のZoomリンクからご参加ください。
+
+キャンセルの場合は、このメールへご返信ください。
 
 あいらいふ運営事務局`;
 }
