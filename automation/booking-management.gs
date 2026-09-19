@@ -5,7 +5,9 @@ const BOOKING_CONFIG = {
   bookingSpreadsheetId: '1eVvwxmWepytwsGVlOFRJC37qkcIRDGzke7cPKKryGTU',
   slotsSheetName: '予約枠',
   reservationsSheetName: '予約者管理',
-  zoomUrl: 'https://us05web.zoom.us/j/87362640884?pwd=K1hsImx0aSZtk5du0V5NtHF1UwCAXs.1',
+  zoomUrl: 'https://us05web.zoom.us/j/9070017228?pwd=QNhP9pldamuMNDbM8fO3EmtbczKF30.1',
+  zoomMeetingId: '907 001 7228',
+  zoomPasscode: 'u7f7U3',
 };
 
 const SLOT_HEADERS = [
@@ -141,7 +143,8 @@ function reserveSlot_(e) {
       if (isExpiredSlotRow_(slot.row)) throw new Error('この日程は受付終了です。');
       const remaining = Number(slot.row[SLOT_HEADERS.indexOf('残席')] || 0);
       if (remaining <= 0) throw new Error('この日程は満員です。');
-      slotsSheet.getRange(slot.rowNumber, SLOT_HEADERS.indexOf('残席') + 1).setValue(remaining - 1);
+      // マンツーマン枠は1件の予約で受付終了にする。
+      slotsSheet.getRange(slot.rowNumber, SLOT_HEADERS.indexOf('残席') + 1).setValue(0);
       slotsSheet.getRange(slot.rowNumber, SLOT_HEADERS.indexOf('更新日時') + 1).setValue(new Date());
     }
 
@@ -311,8 +314,8 @@ function getPublicSlotGroups_(includePrivate) {
       time,
       label: `${date} ${time}`,
       note: row[SLOT_HEADERS.indexOf('メモ')],
-      capacity: Number(row[SLOT_HEADERS.indexOf('定員')] || 0),
-      remaining: Number(row[SLOT_HEADERS.indexOf('残席')] || 0),
+      capacity: 1,
+      remaining: Number(row[SLOT_HEADERS.indexOf('残席')] || 0) > 0 ? 1 : 0,
       isPublic,
     });
   });
@@ -492,6 +495,8 @@ AI LIFE ACADEMY 無料説明会のご予約ありがとうございます。
 
 日程: ${data.slot}
 Zoom: ${data.zoomUrl}
+ミーティングID: ${BOOKING_CONFIG.zoomMeetingId}
+パスコード: ${BOOKING_CONFIG.zoomPasscode}
 
 当日はお時間になりましたらZoomへご参加ください。
 
