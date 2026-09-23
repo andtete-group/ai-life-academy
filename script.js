@@ -703,7 +703,7 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   const title = document.createElement("h3");
   title.textContent = formatWeekTitle(calendarStart);
   const legend = document.createElement("span");
-  legend.textContent = "1枠60分・マンツーマン";
+  legend.textContent = "1枠40分・マンツーマン";
   header.append(title, legend);
 
   const grid = document.createElement("div");
@@ -857,6 +857,9 @@ if (bookingForm) {
       const data = new FormData(bookingForm);
       const selectedSlot = bookingForm.querySelector('input[name="slot"]:checked');
       if (!selectedSlot) throw new Error("希望日程を選択してください。");
+      const purpose = data.get("purpose") || "";
+      const interest = data.get("interest") || "";
+      const interestWithPurpose = `[AIの利用目的] ${purpose}\n[一番知りたいこと] ${interest || "未記入"}`;
 
       if (bookingApi) {
         const managedData = new URLSearchParams({
@@ -866,7 +869,7 @@ if (bookingForm) {
           name: data.get("name") || "",
           email: data.get("email") || "",
           experience: data.get("experience") || "",
-          interest: data.get("interest") || "",
+          interest: interestWithPurpose,
           zoom: bookingZoomUrl,
           source: location.href,
         });
@@ -887,7 +890,7 @@ if (bookingForm) {
       googleFormData.append(googleFormEntries.name, data.get("name") || "");
       googleFormData.append(googleFormEntries.email, data.get("email") || "");
       googleFormData.append(googleFormEntries.experience, data.get("experience") || "");
-      googleFormData.append(googleFormEntries.interest, data.get("interest") || "");
+      googleFormData.append(googleFormEntries.interest, interestWithPurpose);
       googleFormData.append(googleFormEntries.zoom, bookingZoomUrl);
       googleFormData.append(googleFormEntries.source, location.href);
 
