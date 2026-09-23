@@ -1,0 +1,168 @@
+.case-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -25px 0 26px;
+}
+
+.case-filter span {
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: #777080;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.achiever-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.achiever-card {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 14px 35px rgba(80, 46, 66, 0.1);
+  cursor: zoom-in;
+  transition: transform 0.22s, box-shadow 0.22s;
+}
+
+.achiever-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 48px rgba(80, 46, 66, 0.17);
+}
+
+.achiever-card img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.achiever-card > span {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 5px 18px rgba(41, 30, 37, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.featured-achiever {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.featured-achiever img {
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+}
+
+.results-note {
+  margin: 20px auto 0;
+  color: #8b8491;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.possibility-bridge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  margin: 42px 0 90px;
+  padding: 27px 30px;
+  border: 1px solid #e3c7d1;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.possibility-bridge p {
+  margin: 0;
+  color: #585265;
+}
+
+.possibility-bridge strong {
+  color: var(--pink);
+}
+
+.possibility-bridge a {
+  flex: none;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.possibility-bridge a span {
+  margin-left: 15px;
+}
+
+.case-dialog {
+  width: min(880px, calc(100% - 24px));
+  max-height: 94vh;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+}
+
+.case-dialog::backdrop {
+  background: rgba(26, 22, 30, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.case-dialog img {
+  width: 100%;
+  height: auto;
+}
+
+.dialog-close {
+  position: sticky;
+  z-index: 2;
+  top: 12px;
+  float: right;
+  width: 44px;
+  height: 44px;
+  margin: 12px 12px -56px 0;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #3b3540;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 820px) {
+  .achiever-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .featured-achiever { grid-column: span 2; grid-row: auto; }
+  .featured-achiever img { aspect-ratio: 4 / 5; }
+  .possibility-bridge { align-items: flex-start; flex-direction: column; margin: 32px 0 70px; }
+  .possibility-bridge a { width: 100%; text-align: center; }
+}
+
+@media (max-width: 420px) {
+  .achiever-grid { grid-template-columns: 1fr; }
+  .featured-achiever { grid-column: auto; }
+  .achiever-card img,
+  .featured-achiever img { aspect-ratio: 4 / 5; }
+  .case-filter { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 5px; }
+  .case-filter span { flex: none; }
+}
