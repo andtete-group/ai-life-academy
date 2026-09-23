@@ -17,13 +17,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const slider = document.querySelector("#achieverSlider");
   const progress = document.querySelector(".slider-progress span");
+  const updateFocusedCard = () => {
+    if (!slider) return;
+    const center = slider.getBoundingClientRect().left + slider.clientWidth / 2;
+    let closest = null;
+    let distance = Infinity;
+    slider.querySelectorAll(".achiever-card").forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const nextDistance = Math.abs(rect.left + rect.width / 2 - center);
+      if (nextDistance < distance) { closest = card; distance = nextDistance; }
+    });
+    slider.querySelectorAll(".achiever-card").forEach(card => card.classList.toggle("is-focus", card === closest));
+  };
   document.querySelector(".slide-arrow.prev")?.addEventListener("click", () => slider?.scrollBy({left:-378,behavior:"smooth"}));
   document.querySelector(".slide-arrow.next")?.addEventListener("click", () => slider?.scrollBy({left:378,behavior:"smooth"}));
   slider?.addEventListener("scroll", () => {
     const max = slider.scrollWidth - slider.clientWidth;
     const ratio = max > 0 ? slider.scrollLeft / max : 0;
     if (progress) progress.style.transform = `translateX(${ratio * 455}%)`;
+    window.requestAnimationFrame(updateFocusedCard);
   }, {passive:true});
+  updateFocusedCard();
+  window.addEventListener("resize", updateFocusedCard, {passive:true});
 
   const dialog = document.querySelector("#caseDialog");
   const set = (selector, value) => { const el = dialog?.querySelector(selector); if (el) el.textContent = value; };
