@@ -531,7 +531,6 @@ const bookingForm = document.querySelector("#bookingForm");
 const bookingSlotsContainer = document.querySelector("#bookingSlots");
 const bookingZoomUrl = "https://us05web.zoom.us/j/9070017228?pwd=QNhP9pldamuMNDbM8fO3EmtbczKF30.1";
 const bookingConfig = window.AI_LIFE_BOOKING_CONFIG || {};
-let bookingCalendarWeek = null;
 
 function fetchJsonp(url) {
   return new Promise((resolve, reject) => {
@@ -578,13 +577,12 @@ function normalizeSlotGroups(weeks) {
   })).filter((week) => week.slots.length > 0);
 
   // The spreadsheet may contain the same date and time in separate groups.
-  // Keep one safe record and prefer the lowest remaining count.
+  // The API reconciles availability from reservations; keep the latest record here.
   const uniqueSlots = new Map();
   normalized.forEach((week) => {
     week.slots.forEach((slot) => {
       const key = `${slot.date || ""}|${slot.time || ""}`;
-      const previous = uniqueSlots.get(key);
-      if (!previous || slot.remaining < previous.remaining) uniqueSlots.set(key, slot);
+      uniqueSlots.set(key, slot);
     });
   });
 
@@ -593,9 +591,9 @@ function normalizeSlotGroups(weeks) {
 
 function readBookingSlotCache() {
   try {
-    const key = bookingConfig.cacheKey || "aiLifeBookingSlotsV2";
+    const key = bookingConfig.cacheKey || "aiLifeBookingSlotsV4";
     const cached = JSON.parse(localStorage.getItem(key) || "null");
-    const maxAge = Number(bookingConfig.cacheMaxAge || 21600000);
+    const maxAge = Number(bookingConfig.cacheMaxAge || 120000);
     if (!cached || !Array.isArray(cached.weeks) || Date.now() - Number(cached.savedAt || 0) > maxAge) return null;
     return cached.weeks;
   } catch (_) {
@@ -605,7 +603,7 @@ function readBookingSlotCache() {
 
 function saveBookingSlotCache(weeks) {
   try {
-    const key = bookingConfig.cacheKey || "aiLifeBookingSlotsV2";
+    const key = bookingConfig.cacheKey || "aiLifeBookingSlotsV4";
     localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), weeks }));
   } catch (_) {
     // Private browsing or storage restrictions should never block booking.
@@ -662,14 +660,6 @@ function buildCalendarSlots(slots) {
   return grouped;
 }
 
-function getWeekStart(date) {
-  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const mondayOffset = (start.getDay() + 6) % 7;
-  start.setDate(start.getDate() - mondayOffset);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-
 function addDays(date, amount) {
   const result = new Date(date);
   result.setDate(result.getDate() + amount);
@@ -677,7 +667,7 @@ function addDays(date, amount) {
 }
 
 function formatWeekTitle(start) {
-  const end = addDays(start, 6);
+  const end = addDays(start, 7);
   const startText = `${start.getMonth() + 1}月${start.getDate()}日`;
   const endText = `${end.getMonth() + 1}月${end.getDate()}日`;
   return `${start.getFullYear()}年 ${startText}〜${endText}`;
@@ -686,13 +676,6 @@ function formatWeekTitle(start) {
 function formatDayHeading(date) {
   const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
   return { day: `${date.getMonth() + 1}/${date.getDate()}`, weekday: weekdays[date.getDay()] };
-}
-
-function getInitialCalendarWeek(slotMap) {
-  const currentWeek = getWeekStart(new Date());
-  const dates = [...slotMap.values()].map((item) => item.date).sort((a, b) => a - b);
-  const upcoming = dates.find((date) => date >= currentWeek);
-  return getWeekStart(upcoming || new Date());
 }
 
 function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
@@ -712,8 +695,8 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   selected.textContent = "空き日程をタップしてください。";
 
   const slotMap = buildCalendarSlots(slots);
-  if (!bookingCalendarWeek) bookingCalendarWeek = getInitialCalendarWeek(slotMap);
-  const calendarStart = getWeekStart(bookingCalendarWeek);
+  const now = new Date();
+  const calendarStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   const header = document.createElement("div");
   header.className = "calendar-header";
@@ -721,31 +704,13 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   title.textContent = formatWeekTitle(calendarStart);
   const legend = document.createElement("span");
   legend.textContent = "1枠60分・マンツーマン";
-  const controls = document.createElement("div");
-  controls.className = "calendar-month-controls";
-  const previousButton = document.createElement("button");
-  previousButton.type = "button";
-  previousButton.textContent = "← 前の週";
-  const nextButton = document.createElement("button");
-  nextButton.type = "button";
-  nextButton.textContent = "次の週 →";
-  const currentWeek = getWeekStart(new Date());
-  previousButton.disabled = calendarStart <= currentWeek;
-  previousButton.addEventListener("click", () => {
-    bookingCalendarWeek = addDays(calendarStart, -7);
-    renderBookingSlots(weeksSource);
-  });
-  nextButton.addEventListener("click", () => {
-    bookingCalendarWeek = addDays(calendarStart, 7);
-    renderBookingSlots(weeksSource);
-  });
-  controls.append(previousButton, nextButton);
-  header.append(title, legend, controls);
+  header.append(title, legend);
 
   const grid = document.createElement("div");
   grid.className = "calendar-grid weekly-calendar-grid";
 
-  for (let dayOffset = 0; dayOffset < 7; dayOffset += 1) {
+  // 本日から次の同じ曜日までを表示（火曜なら翌週火曜まで）。
+  for (let dayOffset = 0; dayOffset <= 7; dayOffset += 1) {
     const date = addDays(calendarStart, dayOffset);
     const key = formatDateKey(date);
     const entry = slotMap.get(key);
@@ -804,10 +769,10 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
     grid.append(column);
   }
 
-  const weekEnd = addDays(calendarStart, 7);
+  const weekEnd = addDays(calendarStart, 8);
   const hasWeekSlots = [...slotMap.values()].some((entry) => entry.date >= calendarStart && entry.date < weekEnd);
   if (!hasWeekSlots) {
-    selected.textContent = "この週の受付枠はまだありません。次の週を確認してください。";
+    selected.textContent = "現在受付中の日程はありません。";
   }
 
   calendar.append(header, grid, selected);
@@ -843,6 +808,17 @@ async function loadManagedBookingSlots() {
 }
 
 loadManagedBookingSlots();
+
+// In-app browsers sometimes suspend or block the first Google Apps Script request.
+// Retry after returning to the page and at a short interval so a temporary failure
+// never leaves an expired schedule on screen for the rest of the visit.
+window.addEventListener("online", loadManagedBookingSlots);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) loadManagedBookingSlots();
+});
+window.setInterval(() => {
+  if (!document.hidden) loadManagedBookingSlots();
+}, 2 * 60 * 1000);
 
 if (bookingForm) {
   bookingForm.addEventListener("submit", async (event) => {
