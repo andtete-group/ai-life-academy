@@ -531,6 +531,11 @@ const bookingForm = document.querySelector("#bookingForm");
 const bookingSlotsContainer = document.querySelector("#bookingSlots");
 const bookingZoomUrl = "https://us05web.zoom.us/j/9070017228?pwd=QNhP9pldamuMNDbM8fO3EmtbczKF30.1";
 const bookingConfig = window.AI_LIFE_BOOKING_CONFIG || {};
+const trackBookingEvent = (event, detail = {}) => {
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...detail });
+};
+if (bookingForm) trackBookingEvent("booking_view");
 
 function fetchJsonp(url) {
   return new Promise((resolve, reject) => {
@@ -717,6 +722,7 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
     const daySlots = (entry?.slots || []).sort((a, b) => String(a.time || "").localeCompare(String(b.time || ""), "ja"));
     const column = document.createElement("section");
     column.className = "week-day-column";
+    if (dayOffset > 2) column.classList.add("is-extra-day");
     const heading = document.createElement("div");
     heading.className = "week-day-heading";
     const headingText = formatDayHeading(date);
@@ -761,6 +767,8 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
           input.checked = true;
           option.classList.add("is-selected");
           selected.textContent = `選択中: ${input.value}`;
+          trackBookingEvent("booking_slot_selected", { slot: input.value });
+          document.querySelector("#booking-info")?.scrollIntoView({ behavior: "smooth", block: "start" });
         });
       }
       list.append(option);
@@ -775,7 +783,16 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
     selected.textContent = "現在受付中の日程はありません。";
   }
 
-  calendar.append(header, grid, selected);
+  const moreDates = document.createElement("button");
+  moreDates.type = "button";
+  moreDates.className = "booking-more-dates";
+  moreDates.textContent = "ほかの日程も見る ＋";
+  moreDates.addEventListener("click", () => {
+    const expanded = calendar.classList.toggle("show-all-dates");
+    moreDates.textContent = expanded ? "日程を少なく表示 −" : "ほかの日程も見る ＋";
+    trackBookingEvent(expanded ? "booking_dates_expanded" : "booking_dates_collapsed");
+  });
+  calendar.append(header, grid, moreDates, selected);
   bookingSlotsContainer.append(calendar);
 
   if (selectedBeforeRefresh) {
@@ -823,6 +840,7 @@ window.setInterval(() => {
 if (bookingForm) {
   bookingForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    trackBookingEvent("booking_submit_attempt");
 
     let status = bookingForm.querySelector(".form-status");
     if (!status) {
@@ -882,6 +900,7 @@ if (bookingForm) {
         bookingForm.reset();
         await loadManagedBookingSlots();
         status.textContent = "予約内容を送信しました。Zoomリンクをメールでお送りします。";
+        trackBookingEvent("booking_submit_success");
         return;
       }
 
@@ -903,6 +922,7 @@ if (bookingForm) {
       bookingForm.reset();
       status.textContent =
         `予約内容を送信しました。Zoomはこちらです: ${bookingZoomUrl}`;
+      trackBookingEvent("booking_submit_success");
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
       if (location.protocol === "file:") {
@@ -911,6 +931,7 @@ if (bookingForm) {
       } else {
         status.textContent = `送信できませんでした。${message || "時間をおいて再度お試しください。"}`;
       }
+      trackBookingEvent("booking_submit_error", { message: message || "unknown" });
     } finally {
       if (submitButton) submitButton.disabled = false;
     }

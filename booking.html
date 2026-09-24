@@ -9,7 +9,7 @@
       content="TikTokで紹介したプロンプトを含む1000個以上のAIプロンプトと、ChatGPT・Codexの実践体験をご用意した無料AI体験会です。"
     />
     <link rel="stylesheet" href="styles.css?v=20260922-booking-conversion" />
-    <link rel="stylesheet" href="booking-simple.css?v=20260924-simple" />
+    <link rel="stylesheet" href="booking-simple.css?v=20260924-editorial" />
   </head>
   <body class="booking-theme">
     <header class="site-header" aria-label="サイトヘッダー">
@@ -84,17 +84,29 @@
       <section class="booking-calendar-section booking-calendar-priority" aria-labelledby="booking-title">
         <div class="section-inner booking-layout booking-simple-layout">
           <div class="booking-form-intro">
-            <span class="booking-step-label">無料・オンライン</span>
-            <h1 id="booking-title">無料AI体験会を予約</h1>
-            <p>日程を選び、必要事項を入力してください。約1分で完了します。</p>
+            <span class="booking-step-label">参加者限定プレゼント</span>
+            <div class="booking-prompt-gift" aria-label="参加特典 実用プロンプト1000個">
+              <div class="booking-gift-topline"><small>参加者限定</small><i>FREE GIFT</i></div>
+              <p>仕事・副業・SNSに使える</p>
+              <div class="booking-gift-number"><strong>1000</strong><b>個</b></div>
+              <span>実用プロンプト<br />無料プレゼント</span>
+              <div class="booking-gift-previews" aria-hidden="true">
+                <img src="assets/tiktok-animal-89man.jpg?v=20260924" alt="" />
+                <img src="assets/tiktok-princess-34man.jpg?v=20260924" alt="" />
+                <img src="assets/tiktok-profile.jpg?v=20260917" alt="" />
+              </div>
+              <em>診断・画像生成から仕事活用まで、すぐ使える</em>
+            </div>
+            <h1 id="booking-title">受け取り日を選ぶ</h1>
+            <p>無料AI体験会への参加でプレゼント。空いている日程を選び、必要事項を入力するだけです。</p>
             <div class="booking-note">
-              <strong>所要時間40分・マンツーマン</strong>
-              <span>予約後、メールでZoom参加方法をご案内します。</span>
+              <strong>無料・オンライン・約40分</strong>
+              <span>あなた向けのAI活用法を画面で実演します。</span>
             </div>
             <ul class="booking-reassurance">
-              <li>参加費0円・約40分</li>
+              <li>参加後に1000個を受け取れる</li>
               <li>顔出し不要・スマホ参加OK</li>
-              <li>初心者歓迎・質問できます</li>
+              <li>初心者歓迎・参加後の申込は任意</li>
             </ul>
           </div>
 
@@ -113,6 +125,9 @@
             data-entry-source="entry.1115295897"
             data-booking-api=""
           >
+            <div class="booking-form-progress" aria-label="予約完了までの流れ">
+              <span class="is-current"><b>1</b>日程</span><i></i><span><b>2</b>入力</span><i></i><span><b>3</b>完了</span>
+            </div>
             <fieldset>
               <legend><span>1</span> 希望日程</legend>
               <div class="booking-slots" id="bookingSlots" aria-live="polite">
@@ -120,7 +135,7 @@
               </div>
             </fieldset>
 
-            <div class="booking-form-divider"><span>2</span> 予約情報 <small>あと少しで完了</small></div>
+            <div class="booking-form-divider" id="booking-info"><span>2</span> 受け取り情報 <small>入力は3項目だけ</small></div>
             <div class="form-grid">
               <label>
                 <span>LINE名</span>
@@ -130,17 +145,7 @@
                 <span>メールアドレス</span>
                 <input type="email" name="email" autocomplete="email" placeholder="参加案内を受け取るメール" required />
               </label>
-              <label>
-                <span>今のAI経験</span>
-                <select name="experience" required>
-                  <option value="">近いものを選択</option>
-                  <option>ほぼ未経験</option>
-                  <option>ChatGPTを質問に使っている</option>
-                  <option>画像生成・診断プロンプトを使った</option>
-                  <option>仕事やSNSでも使っている</option>
-                  <option>Codexや自動化にも興味がある</option>
-                </select>
-              </label>
+              <input type="hidden" name="experience" value="体験会で相談" />
               <label>
                 <span>AIを何に活かしたいですか？</span>
                 <select name="purpose" required>
@@ -154,10 +159,7 @@
               </label>
             </div>
 
-            <label>
-              <span>一番知りたいこと <small>任意・当日の内容に反映します</small></span>
-              <textarea name="interest" rows="3" placeholder="例：SNS発信、仕事の時短、AI副業、HP制作など"></textarea>
-            </label>
+            <input type="hidden" name="interest" value="選択した目的を中心に相談したい" />
 
             <label class="consent-check">
               <input type="checkbox" name="consent" required />
@@ -165,10 +167,10 @@
             </label>
 
             <button class="button primary large booking-submit" type="submit">
-              <small>選んだ日程で席を確保する</small>
-              無料体験会を予約する
+              <small>参加無料・約1分で完了</small>
+              1000個を受け取る予約を確定する
             </button>
-            <p class="form-help">予約完了メールが届きます。キャンセル時はメール返信でご連絡ください。</p>
+            <p class="form-help">予約後、Zoom参加方法をメールでご案内します。特典は体験会参加後にお受け取りいただけます。</p>
           </form>
         </div>
       </section>
@@ -266,11 +268,11 @@
     </footer>
 
     <a class="booking-mobile-cta" href="#booking-title">
-      <small>マンツーマン・参加無料</small>
-      <strong>空き枠を確認する</strong>
+      <small>参加特典・実用プロンプト1000個</small>
+      <strong>無料で受け取る日を選ぶ</strong>
     </a>
 
     <script src="booking-slots.js?v=20260924-purpose"></script>
-    <script src="script.js?v=20260924-purpose"></script>
+    <script src="script.js?v=20260924-conversion"></script>
   </body>
 </html>
