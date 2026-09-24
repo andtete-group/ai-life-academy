@@ -671,8 +671,8 @@ function addDays(date, amount) {
   return result;
 }
 
-function formatWeekTitle(start) {
-  const end = addDays(start, 7);
+function formatWeekTitle(start, days = 3) {
+  const end = addDays(start, Math.max(days - 1, 0));
   const startText = `${start.getMonth() + 1}月${start.getDate()}日`;
   const endText = `${end.getMonth() + 1}月${end.getDate()}日`;
   return `${start.getFullYear()}年 ${startText}〜${endText}`;
@@ -706,7 +706,9 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   const header = document.createElement("div");
   header.className = "calendar-header";
   const title = document.createElement("h3");
-  title.textContent = formatWeekTitle(calendarStart);
+  const defaultVisibleDays = Math.max(1, Number(bookingConfig.defaultVisibleDays || 3));
+  const extendedVisibleDays = Math.max(defaultVisibleDays, Number(bookingConfig.extendedVisibleDays || 14));
+  title.textContent = formatWeekTitle(calendarStart, defaultVisibleDays);
   const legend = document.createElement("span");
   legend.textContent = "1枠40分・マンツーマン";
   header.append(title, legend);
@@ -714,15 +716,15 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
   const grid = document.createElement("div");
   grid.className = "calendar-grid weekly-calendar-grid";
 
-  // 本日から次の同じ曜日までを表示（火曜なら翌週火曜まで）。
-  for (let dayOffset = 0; dayOffset <= 7; dayOffset += 1) {
+  // 毎日自動で「本日から3日間」を先頭表示。管理画面で追加した先の日程も展開できる。
+  for (let dayOffset = 0; dayOffset < extendedVisibleDays; dayOffset += 1) {
     const date = addDays(calendarStart, dayOffset);
     const key = formatDateKey(date);
     const entry = slotMap.get(key);
     const daySlots = (entry?.slots || []).sort((a, b) => String(a.time || "").localeCompare(String(b.time || ""), "ja"));
     const column = document.createElement("section");
     column.className = "week-day-column";
-    if (dayOffset > 2) column.classList.add("is-extra-day");
+    if (dayOffset >= defaultVisibleDays) column.classList.add("is-extra-day");
     const heading = document.createElement("div");
     heading.className = "week-day-heading";
     const headingText = formatDayHeading(date);
@@ -777,7 +779,7 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
     grid.append(column);
   }
 
-  const weekEnd = addDays(calendarStart, 8);
+  const weekEnd = addDays(calendarStart, extendedVisibleDays);
   const hasWeekSlots = [...slotMap.values()].some((entry) => entry.date >= calendarStart && entry.date < weekEnd);
   if (!hasWeekSlots) {
     selected.textContent = "現在受付中の日程はありません。";
@@ -808,6 +810,9 @@ function renderBookingSlots(weeksSource = window.AI_LIFE_BOOKING_WEEKS) {
 
 renderBookingSlots(readBookingSlotCache() || window.AI_LIFE_BOOKING_WEEKS);
 
+let bookingRefreshAttempts = 0;
+let bookingRefreshTimer = 0;
+
 async function loadManagedBookingSlots() {
   const endpoint = bookingConfig.apiEndpoint || bookingForm?.dataset.bookingApi || "";
   if (!bookingSlotsContainer || !endpoint) return;
@@ -815,12 +820,24 @@ async function loadManagedBookingSlots() {
   try {
     const data = await fetchJsonp(`${endpoint}?action=slots&_=${Date.now()}`);
     if (data && data.ok && Array.isArray(data.weeks)) {
-      saveBookingSlotCache(data.weeks);
-      renderBookingSlots(data.weeks);
+      const normalized = normalizeSlotGroups(data.weeks);
+      const futureSlots = flattenSlots(normalized);
+      if (!futureSlots.length) throw new Error("予約APIから未来の受付枠が返されませんでした。");
+      saveBookingSlotCache(normalized);
+      renderBookingSlots(normalized);
+      bookingRefreshAttempts = 0;
+      window.clearTimeout(bookingRefreshTimer);
     }
   } catch (error) {
     // The immediately rendered cache remains usable when Google is slow.
     console.warn("Live booking slots could not be refreshed; using the local cache.", error);
+    const retryDelays = [3000, 12000, 30000];
+    if (bookingRefreshAttempts < retryDelays.length && !document.hidden) {
+      const delay = retryDelays[bookingRefreshAttempts];
+      bookingRefreshAttempts += 1;
+      window.clearTimeout(bookingRefreshTimer);
+      bookingRefreshTimer = window.setTimeout(loadManagedBookingSlots, delay);
+    }
   }
 }
 

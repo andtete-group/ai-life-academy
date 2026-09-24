@@ -1,8 +1,11 @@
 window.AI_LIFE_BOOKING_CONFIG = {
   apiEndpoint: "https://script.google.com/macros/s/AKfycbzmO7AwbQ1wF1GYp__NkVQNFGWmvFd5O4wJks2QpOY7AV8-pjK-AXexsucnLDq6MZk/exec",
   adminPage: "admin.html",
-  cacheKey: "aiLifeBookingSlotsV4",
-  cacheMaxAge: 2 * 60 * 1000,
+  cacheKey: "aiLifeBookingSlotsV5Rolling",
+  // Google側が一時的に遅くても、最後に取得できた未来枠を残す。
+  cacheMaxAge: 7 * 24 * 60 * 60 * 1000,
+  defaultVisibleDays: 3,
+  extendedVisibleDays: 14,
 };
 
 // Initial schedule shown immediately while the live Google data refreshes.
