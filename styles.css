@@ -1205,6 +1205,63 @@ h3 {
   justify-content: center;
 }
 
+.plan-grid.plan-grid-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.plan-grid-three .plan-card {
+  min-height: 720px;
+}
+
+.plan-grid-three .plan-card h3 {
+  text-wrap: balance;
+}
+
+.plan-tiktok {
+  background:
+    radial-gradient(circle at var(--plan-x, 76%) var(--plan-y, 12%), rgba(218, 116, 148, calc(0.17 * var(--plan-glow, 0))), transparent 30%),
+    linear-gradient(180deg, rgba(255, 251, 252, 0.98), rgba(252, 239, 244, 0.95));
+  border-color: rgba(173, 72, 106, 0.2);
+}
+
+.plan-bundle {
+  background:
+    radial-gradient(circle at var(--plan-x, 80%) var(--plan-y, 12%), rgba(240, 189, 61, calc(0.2 * var(--plan-glow, 0))), transparent 32%),
+    linear-gradient(155deg, rgba(255, 253, 246, 0.98), rgba(237, 246, 246, 0.96));
+  border-color: rgba(183, 146, 65, 0.25);
+}
+
+.plan-ribbon-rose {
+  background: linear-gradient(135deg, #f5c6d6, #fff7fa);
+  color: #81354f;
+}
+
+.plan-ribbon-gold {
+  background: linear-gradient(135deg, #eed18a, #fff8dc);
+  color: #614811;
+}
+
+.plan-visual.tiktok span {
+  background: linear-gradient(160deg, #8a3655, #e3a0b7);
+}
+
+.plan-visual.bundle span {
+  background: linear-gradient(160deg, #0a776f, #d5ae55);
+}
+
+@media (max-width: 1120px) {
+  .plan-grid.plan-grid-three {
+    grid-template-columns: 1fr;
+    max-width: 780px;
+    margin-inline: auto;
+  }
+
+  .plan-grid-three .plan-card {
+    min-height: auto;
+  }
+}
+
 .plan-card {
   position: relative;
   display: grid;
