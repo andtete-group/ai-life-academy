@@ -140,6 +140,14 @@ function reserveSlot_(e) {
     closeExpiredSlots_(slotsSheet);
     const slot = findSlot_(slotsSheet, slotId, slotLabel);
 
+    // 重複判定は端末のlocalStorageではなく、予約台帳を正として行う。
+    // 過去枠・キャンセル済み・取消済み・無効な予約は再予約を妨げない。
+    const reservationsSheet = getSheet_(BOOKING_CONFIG.reservationsSheetName, RESERVATION_HEADERS);
+    const activeReservation = findActiveFutureReservationByEmail_(reservationsSheet, email);
+    if (activeReservation) {
+      throw new Error(`このメールアドレスには未来の予約（${activeReservation.slot}）があります。日程変更をご希望の場合は、予約メールへご返信ください。`);
+    }
+
     if (slot.rowNumber) {
       if (isExpiredSlotRow_(slot.row)) throw new Error('この日程は受付終了です。');
       const remaining = Number(slot.row[SLOT_HEADERS.indexOf('残席')] || 0);
@@ -150,7 +158,6 @@ function reserveSlot_(e) {
     }
 
     const finalSlotLabel = slot.label || slotLabel;
-    const reservationsSheet = getSheet_(BOOKING_CONFIG.reservationsSheetName, RESERVATION_HEADERS);
     reservationsSheet.appendRow([
       new Date(),
       '予約済み',
@@ -450,6 +457,32 @@ function findLatestReservationRowByEmail_(sheet, email) {
     if (normalizeEmail_(values[i]) === email) return i + 2;
   }
   return 0;
+}
+
+function findActiveFutureReservationByEmail_(sheet, email) {
+  if (!email || sheet.getLastRow() <= 1) return null;
+
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, RESERVATION_HEADERS.length).getValues();
+  const emailIndex = RESERVATION_HEADERS.indexOf('メールアドレス');
+  const statusIndex = RESERVATION_HEADERS.indexOf('予約ステータス');
+  const slotIndex = RESERVATION_HEADERS.indexOf('希望日程');
+  const now = new Date();
+
+  for (let i = values.length - 1; i >= 0; i -= 1) {
+    const row = values[i];
+    if (normalizeEmail_(row[emailIndex]) !== email) continue;
+
+    const status = String(row[statusIndex] || '').trim();
+    if (/(キャンセル|取消|無効|期限切れ)/.test(status)) continue;
+
+    const slotLabel = String(row[slotIndex] || '').trim();
+    const start = parseReservationStart_(slotLabel);
+    if (!start || start.getTime() <= now.getTime()) continue;
+
+    return { rowNumber: i + 2, slot: slotLabel, startsAt: start };
+  }
+
+  return null;
 }
 
 function getSheet_(sheetName, headers) {
