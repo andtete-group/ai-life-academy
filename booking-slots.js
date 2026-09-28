@@ -1,7 +1,7 @@
 window.AI_LIFE_BOOKING_CONFIG = {
-  apiEndpoint: "https://script.google.com/macros/s/AKfycbzmO7AwbQ1wF1GYp__NkVQNFGWmvFd5O4wJks2QpOY7AV8-pjK-AXexsucnLDq6MZk/exec",
+  apiEndpoint: "https://script.google.com/macros/s/AKfycbxaoJ0oX2KRi55cXNrIX0i7oqVgwrThTeLnrhjLYoMoiVfMYokeMM5pVQ89ebyw5v0/exec",
   adminPage: "admin.html",
-  cacheKey: "aiLifeBookingSlotsV5Rolling",
+  cacheKey: "aiLifeBookingSlotsV6FutureGuard",
   // Google側が一時的に遅くても、最後に取得できた未来枠を残す。
   cacheMaxAge: 7 * 24 * 60 * 60 * 1000,
   defaultVisibleDays: 3,
