@@ -589,7 +589,11 @@ function normalizeSlotGroups(weeks) {
       // 同じ日の同じ開始時刻が管理シートに重複しても、予約者には1枠だけ表示する。
       // 終了時刻が更新された場合も、後から登録された最新の枠を優先する。
       const startTime = String(slot.time || "").match(/\d{1,2}:\d{2}/)?.[0] || slot.time || "";
-      const key = `${slot.date || ""}|${startTime}`;
+      const slotDate = getSlotDate(slot);
+      const dateKey = slotDate
+        ? `${slotDate.getFullYear()}-${String(slotDate.getMonth() + 1).padStart(2, "0")}-${String(slotDate.getDate()).padStart(2, "0")}`
+        : slot.date || "";
+      const key = `${dateKey}|${startTime}`;
       uniqueSlots.set(key, slot);
     });
   });
