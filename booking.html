@@ -133,6 +133,10 @@
               <div class="booking-slots" id="bookingSlots" aria-live="polite">
                 <p class="slot-loading">空き日程を読み込み中です...</p>
               </div>
+              <div class="last-minute-notice" role="note">
+                <b>直前のご予約について</b>
+                <span>開始直前のご予約は、確認が間に合わず対応できない場合があります。余裕をもった日程をご選択ください。</span>
+              </div>
             </fieldset>
 
             <div class="booking-form-divider" id="booking-info"><span>2</span> 受け取り情報 <small>入力は3項目だけ</small></div>
@@ -144,6 +148,7 @@
               <label>
                 <span>メールアドレス</span>
                 <input type="email" name="email" autocomplete="email" placeholder="参加案内を受け取るメール" required />
+                <small class="email-booking-note">お一人様1枠まで。同じメールアドレスで複数の予約はできません。</small>
               </label>
               <input type="hidden" name="experience" value="体験会で相談" />
               <label>
@@ -170,7 +175,7 @@
               <small>参加無料・約1分で完了</small>
               1000個を受け取る予約を確定する
             </button>
-            <p class="form-help">予約後、Zoom参加方法をメールでご案内します。特典は体験会参加後にお受け取りいただけます。</p>
+            <p class="form-help">予約後、Zoom参加方法をメールでご案内します。直前予約は対応できない場合があります。特典は体験会参加後にお受け取りいただけます。</p>
           </form>
         </div>
       </section>
@@ -273,6 +278,6 @@
     </a>
 
     <script src="booking-slots.js?v=20260924-rolling3"></script>
-    <script src="script.js?v=20260924-rolling3"></script>
+    <script src="script.js?v=20260930-dedupe1"></script>
   </body>
 </html>

@@ -586,7 +586,10 @@ function normalizeSlotGroups(weeks) {
   const uniqueSlots = new Map();
   normalized.forEach((week) => {
     week.slots.forEach((slot) => {
-      const key = `${slot.date || ""}|${slot.time || ""}`;
+      // 同じ日の同じ開始時刻が管理シートに重複しても、予約者には1枠だけ表示する。
+      // 終了時刻が更新された場合も、後から登録された最新の枠を優先する。
+      const startTime = String(slot.time || "").match(/\d{1,2}:\d{2}/)?.[0] || slot.time || "";
+      const key = `${slot.date || ""}|${startTime}`;
       uniqueSlots.set(key, slot);
     });
   });
