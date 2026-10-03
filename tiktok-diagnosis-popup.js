@@ -1,4 +1,24 @@
-(()=>{const ROOT="https://ai-life-tiktok-prompt-box.fumiy88.chatgpt.site";const source="tiktok-cases";const sessionKey="ailifeDiagnosisSession";let session=localStorage.getItem(sessionKey);if(!session){session=crypto.randomUUID();localStorage.setItem(sessionKey,session)}
-const track=type=>fetch(`${ROOT}/api/diagnosis-events`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({eventType:type,source,sessionId:session,eventId:`${session}:${source}:${type}`}),keepalive:true}).catch(()=>{});
-const wrap=document.createElement("div");wrap.innerHTML=`<div class="tdp-backdrop" id="tdp"><aside class="tdp-card" role="dialog" aria-modal="true" aria-labelledby="tdp-title"><button class="tdp-close" aria-label="閉じる">×</button><p class="tdp-kicker">TIKTOK発信・収益化タイプ診断</p><div class="tdp-orbit"><span>発信タイプ</span><b>×</b><span>収益ルート</span></div><h2 id="tdp-title">次に伸びるのは、<br><em>あなたかもしれない。</em></h2><p class="tdp-copy">あなたに向いている発信方法と、収益につなげる順番を8つの質問から診断します。</p><div class="tdp-results"><span>向いている動画の型</span><span>収益化ルート</span><span>最初の3企画</span><span>30日アクション</span></div><a class="tdp-cta" href="${ROOT}/diagnosis?source=${source}">無料で私の勝ち筋を診断する</a><small class="tdp-note">登録不要・約60秒・結果はすぐ表示</small></aside></div><button class="tdp-chip" type="button"><i>60秒</i>私のTikTokタイプを診断</button>`;document.body.append(...wrap.children);const modal=document.getElementById("tdp");const open=()=>{modal.classList.add("is-open");track("popup_view")};const close=()=>modal.classList.remove("is-open");modal.querySelector(".tdp-close").onclick=close;modal.onclick=e=>{if(e.target===modal)close()};document.querySelector(".tdp-chip").onclick=open;const shown=sessionStorage.getItem("tdpShown");if(!shown)setTimeout(()=>{sessionStorage.setItem("tdpShown","1");open()},350);
+(() => {
+  const ROOT = "https://ai-life-tiktok-prompt-box.fumiy88.chatgpt.site";
+  const source = "tiktok-cases";
+  const sessionKey = "ailifeDiagnosisSession";
+  let session = localStorage.getItem(sessionKey);
+  if (!session) {
+    session = crypto.randomUUID();
+    localStorage.setItem(sessionKey, session);
+  }
+  const track = (type) => fetch(`${ROOT}/api/diagnosis-events`, {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ eventType: type, source, sessionId: session, eventId: `${session}:${source}:${type}` }), keepalive: true,
+  }).catch(() => {});
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="tdp-backdrop" id="tdp"><aside class="tdp-card tdp-poster-card" role="dialog" aria-modal="true" aria-label="TikTok発信タイプ診断"><button class="tdp-close tdp-poster-close" aria-label="閉じる">×</button><a class="tdp-poster" href="${ROOT}/diagnosis?source=${source}" aria-label="60秒でTikTok発信タイプを無料診断する"><img src="tiktok-diagnosis-popup.jpg" alt="60秒でわかる、あなたに向いているTikTok発信タイプ。発信ジャンル、企画タイプ、収益化の進め方を無料診断"></a></aside></div><button class="tdp-chip" type="button"><i>60秒</i>私のTikTokタイプを診断</button>`;
+  document.body.append(...wrap.children);
+  const modal = document.getElementById("tdp");
+  const open = () => { modal.classList.add("is-open"); track("popup_view"); };
+  const close = () => modal.classList.remove("is-open");
+  modal.querySelector(".tdp-close").onclick = close;
+  modal.onclick = (event) => { if (event.target === modal) close(); };
+  document.querySelector(".tdp-chip").onclick = open;
+  if (!sessionStorage.getItem("tdpShown")) setTimeout(() => { sessionStorage.setItem("tdpShown", "1"); open(); }, 350);
 })();
