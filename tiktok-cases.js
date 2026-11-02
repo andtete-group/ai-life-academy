@@ -16,14 +16,16 @@ const bar=document.querySelector(".progress span");slider.addEventListener("scro
 const dialog=document.querySelector("#caseDialog"),set=(s,v)=>dialog.querySelector(s).textContent=v,list=(s,a)=>dialog.querySelector(s).innerHTML=a.map(v=>`<li>${v}</li>`).join("");document.querySelectorAll(".case-card").forEach(card=>card.onclick=()=>{const x=data.find(v=>v.id===card.dataset.id);pause();dialog.querySelector("img").src=`tiktok-case-${x.image}`;set(".dialog-category",x.category);set(".dialog-name",x.name);set(".dialog-result",x.result);set(".dialog-goal",x.goal);set(".dialog-action",x.action);set(".dialog-outcome",x.outcome);set(".dialog-summary",x.summary);list(".dialog-analysis",x.analysis);list(".dialog-changes",x.changes);dialog.showModal()});const close=()=>{dialog.close();play()};dialog.querySelector(".close").onclick=close;dialog.onclick=e=>{if(e.target===dialog)close()};
 const reveal=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");reveal.unobserve(e.target)}}),{threshold:.1});document.querySelectorAll(".case-card,.viral figure,.process li,.cta-card").forEach(x=>reveal.observe(x));const floating=document.querySelector("#floating"),final=document.querySelector(".cta-card");new IntersectionObserver(([e])=>floating.classList.toggle("hide",e.isIntersecting),{threshold:.15}).observe(final);
 
-const lineUrl="https://line.me/R/oaMessage/@708mipsf/";
+const lineUrl="https://line.me/R/ti/p/@708mipsf";
 const auditKeyword="添削希望";
 const toast=document.querySelector("#copyToast");
 const fallbackCopy=text=>{const area=document.createElement("textarea");area.value=text;area.setAttribute("readonly","");area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove()};
-document.querySelectorAll(".line-audit-cta").forEach(link=>link.addEventListener("click",async event=>{
-  event.preventDefault();
-  try{await navigator.clipboard.writeText(auditKeyword)}catch{fallbackCopy(auditKeyword)}
-  toast?.classList.add("show");
-  window.setTimeout(()=>{window.location.href=lineUrl},650);
-}));
+document.querySelectorAll(".line-audit-cta").forEach(link=>{
+  link.href=lineUrl;
+  link.addEventListener("click",()=>{
+    fallbackCopy(auditKeyword);
+    navigator.clipboard?.writeText(auditKeyword).catch(()=>{});
+    toast?.classList.add("show");
+  });
+});
 });
