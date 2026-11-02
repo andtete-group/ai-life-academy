@@ -19,6 +19,7 @@ const reveal=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.
 const lineUrl="https://line.me/R/ti/p/@708mipsf";
 const auditKeyword="添削希望";
 const toast=document.querySelector("#copyToast");
+let toastTimer;
 const fallbackCopy=text=>{const area=document.createElement("textarea");area.value=text;area.setAttribute("readonly","");area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove()};
 document.querySelectorAll(".line-audit-cta").forEach(link=>{
   link.href=lineUrl;
@@ -26,6 +27,14 @@ document.querySelectorAll(".line-audit-cta").forEach(link=>{
     fallbackCopy(auditKeyword);
     navigator.clipboard?.writeText(auditKeyword).catch(()=>{});
     toast?.classList.add("show");
+    clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast?.classList.remove("show"),2600);
   });
 });
+const auditPopup=document.querySelector("#auditPopup"),popupClose=auditPopup?.querySelector(".audit-popup-close");
+const popupKey="tiktokAuditPopupSeenV1";
+const showAuditPopup=()=>{if(!auditPopup||sessionStorage.getItem(popupKey))return;auditPopup.classList.add("show");auditPopup.setAttribute("aria-hidden","false");sessionStorage.setItem(popupKey,"1")};
+let popupTimer=setTimeout(showAuditPopup,8000);
+const onPopupScroll=()=>{const page=Math.max(1,document.documentElement.scrollHeight-innerHeight);if(scrollY/page>.22){clearTimeout(popupTimer);showAuditPopup();removeEventListener("scroll",onPopupScroll)}};
+addEventListener("scroll",onPopupScroll,{passive:true});
+popupClose?.addEventListener("click",()=>{auditPopup.classList.remove("show");auditPopup.setAttribute("aria-hidden","true")});
 });
