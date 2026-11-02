@@ -13,6 +13,11 @@
 .results-bridge p { margin: 0; color: #625b68; font-size: 14px; line-height: 1.8; }
 .results-bridge strong { color: var(--navy); font-family: "Yu Mincho", serif; font-size: 19px; }
 .results-bridge a { flex: 0 0 auto; padding: 13px 20px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 13px; font-weight: 900; box-shadow: 0 12px 28px rgba(39, 43, 73, .18); }
+.secondary-benefit { background: #fff8e8; border-color: #dbc398 !important; color: #7a5c2b; }
+.copy-toast { position: fixed; z-index: 100; left: 50%; bottom: 92px; display: grid; gap: 2px; min-width: min(340px, calc(100% - 32px)); padding: 14px 20px; border: 1px solid rgba(255,255,255,.3); border-radius: 16px; background: rgba(39,43,73,.96); color: #fff; text-align: center; box-shadow: 0 18px 50px rgba(27,24,38,.32); opacity: 0; pointer-events: none; transform: translate(-50%,18px); transition: .25s ease; }
+.copy-toast.show { opacity: 1; transform: translate(-50%,0); }
+.copy-toast strong { font-size: 14px; }
+.copy-toast span { color: #ddd9e5; font-size: 11px; }
 @media (max-width: 820px) {
   .hero h1 { font-size: clamp(34px, 9.8vw, 45px); line-height: 1.35; letter-spacing: -.055em; }
   .hero h1 span { white-space: nowrap; }
